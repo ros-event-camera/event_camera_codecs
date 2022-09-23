@@ -131,6 +131,7 @@ void Decoder::decode(const uint8_t * buf, size_t bufSize, EventProcessor * proce
         break;
     }
   }
+  processor->finished();
 }
 
 void Decoder::summarize(

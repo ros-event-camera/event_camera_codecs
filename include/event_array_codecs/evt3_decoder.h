@@ -36,6 +36,10 @@ public:
   void summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) override;
+  void setTimeBase(uint64_t) override
+  {
+    // no-op
+  }
 
 private:
   // --------------------- variables

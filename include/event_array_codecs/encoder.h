@@ -13,31 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__DECODER_H_
-#define EVENT_ARRAY_CODECS__DECODER_H_
+#ifndef EVENT_ARRAY_CODECS__ENCODER_H_
+#define EVENT_ARRAY_CODECS__ENCODER_H_
 
 #include <stdint.h>
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace event_array_codecs
 {
-class EventProcessor;  // forward decl
-class Decoder
+class Encoder
 {
 public:
-  virtual ~Decoder() {}
+  virtual ~Encoder() {}
   // ---- interface methods
-  virtual void decode(const uint8_t * buf, size_t bufSize, EventProcessor * processor) = 0;
-  virtual void summarize(
-    const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
-    size_t * numEventsOnOff) = 0;
-  virtual void setTimeBase(const uint64_t timeBase) = 0;
+  virtual void setBuffer(std::vector<uint8_t> *buf) = 0;
+  virtual void setSensorTime(uint64_t sensorTime) = 0;
+  virtual void encodeCD(uint32_t dt, uint16_t x, uint16_t y, uint8_t p) = 0;
+  virtual void encodeExtTrigger(uint32_t dt, uint8_t edge, uint8_t id) = 0;
+  virtual void flush() = 0;
   // ----- static methods
   // factory method to create new instance
-  static std::shared_ptr<Decoder> newInstance(const std::string & codec);
+  static std::shared_ptr<Encoder> newInstance(const std::string & codec);
 };
 
 }  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__DECODER_H_
+#endif  // EVENT_ARRAY_CODECS__ENCODER_H_

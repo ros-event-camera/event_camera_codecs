@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
   }
 
   while (!stop_decoding) {
-    uint16_t ret = i_eventsstream->poll_buffer();
+    int16_t ret = i_eventsstream->poll_buffer();
     if (ret < 0) {
       std::cout << "End of file" << std::endl;
       i_eventsstream->stop();

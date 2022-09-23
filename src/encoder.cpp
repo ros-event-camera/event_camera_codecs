@@ -13,23 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "event_array_codecs/decoder.h"
+#include "event_array_codecs/encoder.h"
 
-#include "event_array_codecs/evt3_decoder.h"
-#include "event_array_codecs/mono_decoder.h"
-#include "event_array_codecs/trigger_decoder.h"
+#include "event_array_codecs/evt3_encoder.h"
+#include "event_array_codecs/mono_encoder.h"
 
 namespace event_array_codecs
 {
-std::shared_ptr<Decoder> Decoder::newInstance(const std::string & codec)
+std::shared_ptr<Encoder> Encoder::newInstance(const std::string & codec)
 {
-  if (codec == "evt3") {
-    return (std::make_shared<evt3::Decoder>());
-  } else if (codec == "mono") {
-    return (std::make_shared<mono::Decoder>());
-  } else if (codec == "trigger") {
-    return (std::make_shared<trigger::Decoder>());
+  if (codec == "mono" || codec == "trigger") {
+    return (std::make_shared<mono::Encoder>());
   }
-  return (std::shared_ptr<Decoder>());
+  return (std::shared_ptr<Encoder>());
 }
 }  // namespace event_array_codecs
