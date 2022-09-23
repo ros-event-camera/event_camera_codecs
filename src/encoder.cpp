@@ -15,7 +15,6 @@
 
 #include "event_array_codecs/encoder.h"
 
-#include "event_array_codecs/evt3_encoder.h"
 #include "event_array_codecs/mono_encoder.h"
 
 namespace event_array_codecs

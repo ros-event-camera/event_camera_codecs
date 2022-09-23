@@ -15,7 +15,7 @@
 
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 # find dependencies
-find_package(MetavisionSDK COMPONENTS driver REQUIRED)
+# find_package(MetavisionSDK COMPONENTS driver REQUIRED)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -36,26 +36,47 @@ ament_auto_find_build_dependencies(REQUIRED ${ROS2_DEPENDENCIES})
 #
 # --------- encoding/decoding library
 #
-ament_auto_add_library(codec  src/decoder.cpp src/evt3_decoder.cpp)
+add_library(codec  src/decoder.cpp src/evt3_decoder.cpp src/encoder.cpp)
+target_include_directories(codec
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+
+ament_export_targets(codecTargets HAS_LIBRARY_TARGET)
+ament_export_dependencies(${ROS2_DEPENDENCIES})
 
 #
 # ---- performance test tool
 #
-ament_auto_add_executable(perf src/perf.cpp)
+add_executable(perf src/perf.cpp)
+target_link_libraries(perf codec)
 
 #
 # ---- metavision test code
 #
-ament_auto_add_executable(metavision_test src/metavision_test.cpp)
-target_link_libraries(metavision_test MetavisionSDK::driver)
+#ament_auto_add_executable(metavision_test src/metavision_test.cpp)
+#target_link_libraries(metavision_test MetavisionSDK::driver)
 
-# the node must go into the paroject specific lib directory or else
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(
+  TARGETS   codec
+  EXPORT codecTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
+
+# the node must go into the project specific lib directory or else
 # the launch file will not find it
 
 install(TARGETS
-  codec
   perf
-  metavision_test
+#  metavision_test
   DESTINATION lib/${PROJECT_NAME}/)
 
 if(BUILD_TESTING)
@@ -78,5 +99,12 @@ if(BUILD_TESTING)
   ament_pep257()
   ament_xmllint()
 endif()
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(${ROS2_DEPENDENCIES})
+ament_export_dependencies(class_loader)
+
+ament_export_include_directories(include)
+ament_export_libraries(codec)
 
 ament_package()

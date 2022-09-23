@@ -29,7 +29,7 @@ class Encoder
 public:
   virtual ~Encoder() {}
   // ---- interface methods
-  virtual void setBuffer(std::vector<uint8_t> *buf) = 0;
+  virtual void setBuffer(std::vector<uint8_t> * buf) = 0;
   virtual void setSensorTime(uint64_t sensorTime) = 0;
   virtual void encodeCD(uint32_t dt, uint16_t x, uint16_t y, uint8_t p) = 0;
   virtual void encodeExtTrigger(uint32_t dt, uint8_t edge, uint8_t id) = 0;
