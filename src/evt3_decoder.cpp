@@ -201,5 +201,33 @@ void Decoder::summarize(
     *lastTS = static_cast<uint64_t>(t2);
   }
 }
+
+bool Decoder::findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS)
+{
+  const size_t numRead = size / sizeof(Event);
+  const Event * buffer = reinterpret_cast<const Event *>(buf);
+  bool foundTime(false);
+  for (size_t i = 0; i < numRead; i++) {
+    switch (buffer[i].code) {
+      case Code::TIME_LOW: {
+        const TimeLow * e = reinterpret_cast<const TimeLow *>(&buffer[i]);
+        timeLow_ = e->t;
+        if (timeHigh_ != 0) {
+          *firstTS = make_time(timeHigh_, timeLow_);
+          foundTime = true;
+          // cannot return early, need to update decoder state!
+        }
+      } break;
+      case Code::TIME_HIGH: {
+        const TimeHigh * e = reinterpret_cast<const TimeHigh *>(&buffer[i]);
+        timeHigh_ = update_high_time(e->t, timeHigh_);
+      } break;
+      default:
+        break;
+    }
+  }
+  return (foundTime);
+}
+
 }  // namespace evt3
 }  // namespace event_array_codecs

@@ -54,6 +54,15 @@ public:
 
   void setTimeBase(uint64_t t) override { timeBase_ = t; }
 
+  bool findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS) override
+  {
+    if (size >= 8) {
+      *firstTS = ((*reinterpret_cast<const uint64_t *>(buf)) & 0xFFFFFFFFULL) + timeBase_;
+      return (true);
+    }
+    return (false);
+  }
+
 private:
   // --------------------- variables
   uint64_t timeBase_{0};

@@ -40,6 +40,7 @@ public:
   {
     // no-op
   }
+  bool findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS) override;
 
 private:
   // --------------------- variables
