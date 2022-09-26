@@ -43,13 +43,23 @@ public:
     }
   }
 
-  void summarize(
-    const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS, size_t *) override
+  bool summarize(
+    const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
+    size_t * numEventsOnOff) override
   {
+    bool hasValidTime(false);
     if (size >= 8) {
       *firstTS = ((*reinterpret_cast<const uint64_t *>(buf)) & 0xFFFFFFFFULL) + timeBase_;
       *lastTS = ((*reinterpret_cast<const uint64_t *>(buf + size - 8)) & 0xFFFFFFFFULL) + timeBase_;
+      hasValidTime = true;
     }
+    if (numEventsOnOff) {
+      for (const uint8_t * p_u8 = buf; p_u8 < buf + size; p_u8 += 8) {
+        const uint64_t & p = *reinterpret_cast<const uint64_t *>(p_u8);
+        numEventsOnOff[(p & ~0x7FFFFFFFFFFFFFFFULL) != 0]++;
+      }
+    }
+    return (hasValidTime);
   }
 
   void setTimeBase(uint64_t t) override { timeBase_ = t; }

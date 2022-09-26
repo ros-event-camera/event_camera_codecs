@@ -30,7 +30,7 @@ public:
   virtual ~Decoder() {}
   // ---- interface methods
   virtual void decode(const uint8_t * buf, size_t bufSize, EventProcessor * processor) = 0;
-  virtual void summarize(
+  virtual bool summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) = 0;
   virtual void setTimeBase(const uint64_t timeBase) = 0;

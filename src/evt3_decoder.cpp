@@ -16,6 +16,7 @@
 #include "event_array_codecs/evt3_decoder.h"
 
 #include <bitset>
+#include <limits>
 
 #include "event_array_codecs/event_processor.h"
 #include "event_array_codecs/evt3_types.h"
@@ -26,39 +27,20 @@ namespace evt3
 {
 using timestamp_t = Decoder::timestamp_t;
 
-inline static timestamp_t make_time(timestamp_t high, uint16_t low) { return (high | low); }
-
-inline static timestamp_t update_high_time(uint16_t t, timestamp_t timeHigh)
+inline static timestamp_t make_time(timestamp_t high, uint16_t low)
 {
-  // shift right and remove rollover bits to get last time_high
-  const timestamp_t lastHigh = (timeHigh >> 12) & ((1ULL << 12) - 1);
-  // sometimes the high stamp goes back a little without a rollover really happening
-  const timestamp_t MIN_DISTANCE = 10;
-  if (t < lastHigh && lastHigh - t > MIN_DISTANCE) {
-    // new high time is smaller than old high time, bump high time bits
-    // printf("%x %lx %lx\n", t, lastHigh, lastHigh - t);
-    // std::cout << "rollover detected: new " << t << " old: " << lastHigh << std::endl;
-    timeHigh += (1 << 24);  // add to rollover bits
-  } else if (t < lastHigh) {
-    // std::cout << "rollover averted: new " << t << " old: " << lastHigh << std::endl;
-  }
-  // wipe out lower 24 bits of timeHigh (leaving only rollover bits)
-  // and replace non-rollover bits with new time base
-  timeHigh = (timeHigh & (~((1ULL << 24) - 1))) | (static_cast<timestamp_t>(t) << 12);
-  return (timeHigh);
+  return ((high | low) * 1000);
 }
-
-// #define DEBUG
 
 void Decoder::decode(const uint8_t * buf, size_t bufSize, EventProcessor * processor)
 {
   const size_t numRead = bufSize / sizeof(Event);
   const Event * buffer = reinterpret_cast<const Event *>(buf);
-  for (size_t i = 0; i < numRead; i++) {
+  for (size_t i = findValidTime(buffer, numRead); i < numRead; i++) {
     switch (buffer[i].code) {
       case Code::ADDR_X: {
         const AddrX * e = reinterpret_cast<const AddrX *>(&buffer[i]);
-        processor->eventCD(timeHigh_ | timeLow_, e->x, ey_, e->polarity);
+        processor->eventCD(make_time(timeHigh_, timeLow_), e->x, ey_, e->polarity);
         numEvents_++;
       } break;
       case Code::ADDR_Y: {
@@ -72,7 +54,6 @@ void Decoder::decode(const uint8_t * buf, size_t bufSize, EventProcessor * proce
       case Code::TIME_HIGH: {
         const TimeHigh * e = reinterpret_cast<const TimeHigh *>(&buffer[i]);
         timeHigh_ = update_high_time(e->t, timeHigh_);
-        lastHigh_ = e->t;
       } break;
       case Code::VECT_BASE_X: {
         const VectBaseX * b = reinterpret_cast<const VectBaseX *>(&buffer[i]);
@@ -134,15 +115,21 @@ void Decoder::decode(const uint8_t * buf, size_t bufSize, EventProcessor * proce
   processor->finished();
 }
 
-void Decoder::summarize(
+bool Decoder::summarize(
   const uint8_t * buf, size_t bufSize, uint64_t * firstTS, uint64_t * lastTS,
   size_t * numEventsOnOff)
 {
   const size_t numRead = bufSize / sizeof(Event);
   const Event * buffer = reinterpret_cast<const Event *>(buf);
-  int64_t t1(-1), t2(-1);
+  // find first valid time stamp
+  size_t i = findValidTime(buffer, numRead);
+  if (!hasValidTime_) {
+    return (hasValidTime_);
+  }
+  uint64_t t1 = make_time(timeHigh_, timeLow_);
+  uint64_t t2 = t1;
 
-  for (size_t i = 0; i < numRead; i++) {
+  for (; i < numRead; i++) {
     switch (buffer[i].code) {
       case Code::ADDR_X: {
         const AddrX * e = reinterpret_cast<const AddrX *>(&buffer[i]);
@@ -151,15 +138,9 @@ void Decoder::summarize(
       case Code::TIME_LOW: {
         const TimeLow * e = reinterpret_cast<const TimeLow *>(&buffer[i]);
         timeLow_ = e->t;
-        if (timeHigh_ != 0) {
-          const timestamp_t t = make_time(timeHigh_, timeLow_);
-          if (t1 < 0) {
-            t1 = t;
-          }
-          if (static_cast<int64_t>(t) > t2) {
-            t2 = static_cast<int64_t>(t);
-          }
-        }
+        const timestamp_t t = make_time(timeHigh_, timeLow_);
+        t1 = std::min(t, t1);
+        t2 = std::max(t, t2);
       } break;
       case Code::TIME_HIGH: {
         const TimeHigh * e = reinterpret_cast<const TimeHigh *>(&buffer[i]);
@@ -194,29 +175,25 @@ void Decoder::summarize(
         break;
     }
   }
-  if (t1 > 0) {
-    *firstTS = static_cast<uint64_t>(t1);
-  }
-  if (t2 > 0) {
-    *lastTS = static_cast<uint64_t>(t2);
-  }
+  *firstTS = t1;
+  *lastTS = t2;
+  return (hasValidTime_);
 }
 
 bool Decoder::findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS)
 {
   const size_t numRead = size / sizeof(Event);
   const Event * buffer = reinterpret_cast<const Event *>(buf);
+  size_t i = findValidTime(buffer, numRead);
   bool foundTime(false);
-  for (size_t i = 0; i < numRead; i++) {
+  *firstTS = make_time(timeHigh_, timeLow_);
+  // need to still run this loop to update the time state of the decoder
+  // and capture rollover etc
+  for (; i < numRead; i++) {
     switch (buffer[i].code) {
       case Code::TIME_LOW: {
         const TimeLow * e = reinterpret_cast<const TimeLow *>(&buffer[i]);
         timeLow_ = e->t;
-        if (timeHigh_ != 0) {
-          *firstTS = make_time(timeHigh_, timeLow_);
-          foundTime = true;
-          // cannot return early, need to update decoder state!
-        }
       } break;
       case Code::TIME_HIGH: {
         const TimeHigh * e = reinterpret_cast<const TimeHigh *>(&buffer[i]);
