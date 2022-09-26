@@ -185,7 +185,6 @@ bool Decoder::findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * f
   const size_t numRead = size / sizeof(Event);
   const Event * buffer = reinterpret_cast<const Event *>(buf);
   size_t i = findValidTime(buffer, numRead);
-  bool foundTime(false);
   *firstTS = make_time(timeHigh_, timeLow_);
   // need to still run this loop to update the time state of the decoder
   // and capture rollover etc
@@ -203,7 +202,7 @@ bool Decoder::findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * f
         break;
     }
   }
-  return (foundTime);
+  return (hasValidTime_);
 }
 
 }  // namespace evt3
