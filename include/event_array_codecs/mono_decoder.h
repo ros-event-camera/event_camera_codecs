@@ -42,6 +42,7 @@ public:
         static_cast<uint16_t>((p >> 32) & 0xFFFFULL), static_cast<uint16_t>((p >> 48) & 0x7FFFULL),
         static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL));
     }
+    processor->finished();
   }
 
   bool summarize(

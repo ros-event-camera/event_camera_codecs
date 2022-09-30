@@ -41,6 +41,7 @@ public:
         timeBase_ + static_cast<uint32_t>(p & 0xFFFFFFFFULL),
         static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL), static_cast<uint8_t>((p >> 48) & 0x7FFFULL));
     }
+    processor->finished();
   }
 
   bool summarize(
