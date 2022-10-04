@@ -38,6 +38,8 @@ public:
   // ----- static methods
   // factory method to create new instance
   static std::shared_ptr<Decoder> newInstance(const std::string & codec);
+  // factory method to get decoder from shared pool
+  static std::shared_ptr<Decoder> getInstance(const std::string & codec);
 };
 
 }  // namespace event_array_codecs

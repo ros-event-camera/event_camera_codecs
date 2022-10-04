@@ -15,6 +15,8 @@
 
 #include "event_array_codecs/decoder.h"
 
+#include <unordered_map>
+
 #include "event_array_codecs/evt3_decoder.h"
 #include "event_array_codecs/mono_decoder.h"
 #include "event_array_codecs/trigger_decoder.h"
@@ -31,5 +33,17 @@ std::shared_ptr<Decoder> Decoder::newInstance(const std::string & codec)
     return (std::make_shared<trigger::Decoder>());
   }
   return (std::shared_ptr<Decoder>());
+}
+
+static std::unordered_map<std::string, std::shared_ptr<Decoder>> decoder_map;
+
+std::shared_ptr<Decoder> Decoder::getInstance(const std::string & codec)
+{
+  auto it = decoder_map.find(codec);
+  if (it == decoder_map.end()) {
+    auto elem = decoder_map.insert({codec, newInstance(codec)});
+    return (elem.first->second);
+  }
+  return (it->second);
 }
 }  // namespace event_array_codecs

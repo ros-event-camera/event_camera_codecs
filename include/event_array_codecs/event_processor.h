@@ -16,6 +16,9 @@
 #ifndef EVENT_ARRAY_CODECS__EVENT_PROCESSOR_H_
 #define EVENT_ARRAY_CODECS__EVENT_PROCESSOR_H_
 
+#include <cstddef>
+#include <cstdint>
+
 namespace event_array_codecs
 {
 class EventProcessor
