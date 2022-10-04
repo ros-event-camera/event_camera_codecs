@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 
-#include "event_array_codecs/decoder.h"
+#include "event_array_codecs/decoder_factory.h"
 #include "event_array_codecs/event_processor.h"
 
 void usage()
@@ -116,7 +116,8 @@ int main(int argc, char ** argv)
 
   std::vector<char> buffer(bufferSize);
   EventCounter counter;
-  auto decoder = event_array_codecs::Decoder::newInstance(codec);
+  event_array_codecs::DecoderFactory<EventCounter> factory;
+  auto decoder = factory.newInstance(codec);
   if (!decoder) {
     std::cout << "unknown codec: " << codec << std::endl;
   } else {

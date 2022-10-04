@@ -28,12 +28,13 @@ namespace event_array_codecs
 {
 namespace trigger
 {
-class Decoder : public event_array_codecs::Decoder
+template <class EventProcT>
+class Decoder : public event_array_codecs::Decoder<EventProcT>
 {
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcessor * processor) override
+  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     for (const uint8_t * p_u8 = buf; p_u8 < buf + bufSize; p_u8 += 8) {
       const uint64_t & p = *reinterpret_cast<const uint64_t *>(p_u8);

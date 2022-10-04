@@ -36,7 +36,7 @@ ament_auto_find_build_dependencies(REQUIRED ${ROS2_DEPENDENCIES})
 #
 # --------- encoding/decoding library
 #
-add_library(codec  src/decoder.cpp src/evt3_decoder.cpp src/encoder.cpp)
+add_library(codec  src/encoder.cpp)
 target_include_directories(codec
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -23,23 +23,18 @@
 
 namespace event_array_codecs
 {
-class EventProcessor;  // forward decl
+template <class EventProcT>
 class Decoder
 {
 public:
   virtual ~Decoder() {}
   // ---- interface methods
-  virtual void decode(const uint8_t * buf, size_t bufSize, EventProcessor * processor) = 0;
+  virtual void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
   virtual bool summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) = 0;
   virtual void setTimeBase(const uint64_t timeBase) = 0;
   virtual bool findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS) = 0;
-  // ----- static methods
-  // factory method to create new instance
-  static std::shared_ptr<Decoder> newInstance(const std::string & codec);
-  // factory method to get decoder from shared pool
-  static std::shared_ptr<Decoder> getInstance(const std::string & codec);
 };
 
 }  // namespace event_array_codecs
