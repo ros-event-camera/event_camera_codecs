@@ -16,6 +16,7 @@
 #ifndef EVENT_ARRAY_CODECS__DECODER_H_
 #define EVENT_ARRAY_CODECS__DECODER_H_
 
+#include <event_array_codecs/noop_event_processor.h>
 #include <stdint.h>
 
 #include <memory>
@@ -23,7 +24,7 @@
 
 namespace event_array_codecs
 {
-template <class EventProcT>
+template <class EventProcT = NoOpEventProcessor>
 class Decoder
 {
 public:

@@ -35,7 +35,6 @@ include_directories(
 # ----- encoding/decoding library
 #
 add_library(codec
-  src/decoder.cpp src/evt3_decoder.cpp
   src/encoder.cpp)
 target_link_libraries(codec ${catkin_LIBRARIES})
 

@@ -19,6 +19,7 @@
 #include <event_array_codecs/decoder.h>
 #include <event_array_codecs/evt3_decoder.h>
 #include <event_array_codecs/mono_decoder.h>
+#include <event_array_codecs/noop_event_processor.h>
 #include <event_array_codecs/trigger_decoder.h>
 #include <stdint.h>
 
@@ -28,7 +29,7 @@
 
 namespace event_array_codecs
 {
-template <class EventProcT>
+template <class EventProcT = NoOpEventProcessor>
 class DecoderFactory
 {
 public:
