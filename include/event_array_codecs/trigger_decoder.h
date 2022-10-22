@@ -74,6 +74,9 @@ public:
     }
     return (false);
   }
+  void setTimeMultiplier(uint32_t) override
+  { /* ignored */
+  }
 
 private:
   // --------------------- variables

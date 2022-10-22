@@ -24,7 +24,7 @@ namespace event_array_codecs
 class EventProcessor
 {
 public:
-  ~EventProcessor() {}
+  virtual ~EventProcessor() {}
   virtual void eventCD(uint64_t sensor_time, uint16_t ex, uint16_t ey, uint8_t polarity) = 0;
   virtual void eventExtTrigger(uint64_t sensor_time, uint8_t edge, uint8_t id) = 0;
   virtual void finished() = 0;

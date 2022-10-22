@@ -44,7 +44,7 @@ public:
       switch (buffer[i].code) {
         case Code::ADDR_X: {
           const AddrX * e = reinterpret_cast<const AddrX *>(&buffer[i]);
-          processor->eventCD(make_time(timeHigh_, timeLow_), e->x, ey_, e->polarity);
+          processor->eventCD(makeTime(timeHigh_, timeLow_), e->x, ey_, e->polarity);
           numEvents_++;
         } break;
         case Code::ADDR_Y: {
@@ -70,7 +70,7 @@ public:
           for (int i = 0; i < 8; i++) {
             if (b->valid & (1 << i)) {
               processor->eventCD(
-                make_time(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
+                makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
               numEvents_++;
             }
           }
@@ -82,7 +82,7 @@ public:
           for (int i = 0; i < 12; i++) {
             if (b->valid & (1 << i)) {
               processor->eventCD(
-                make_time(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
+                makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
               numEvents_++;
             }
           }
@@ -91,7 +91,7 @@ public:
         }
         case Code::EXT_TRIGGER: {
           const ExtTrigger * e = reinterpret_cast<const ExtTrigger *>(&buffer[i]);
-          processor->eventExtTrigger(make_time(timeHigh_, timeLow_), e->edge, e->id);
+          processor->eventExtTrigger(makeTime(timeHigh_, timeLow_), e->edge, e->id);
           break;
         }
         case Code::OTHERS: {
@@ -129,7 +129,7 @@ public:
     if (!hasValidTime_) {
       return (hasValidTime_);
     }
-    uint64_t t1 = make_time(timeHigh_, timeLow_);
+    uint64_t t1 = makeTime(timeHigh_, timeLow_);
     uint64_t t2 = t1;
 
     for (; i < numRead; i++) {
@@ -141,7 +141,7 @@ public:
         case Code::TIME_LOW: {
           const TimeLow * e = reinterpret_cast<const TimeLow *>(&buffer[i]);
           timeLow_ = e->t;
-          const timestamp_t t = make_time(timeHigh_, timeLow_);
+          const timestamp_t t = makeTime(timeHigh_, timeLow_);
           t1 = std::min(t, t1);
           t2 = std::max(t, t2);
         } break;
@@ -191,7 +191,7 @@ public:
     const size_t numRead = size / sizeof(Event);
     const Event * buffer = reinterpret_cast<const Event *>(buf);
     size_t i = findValidTime(buffer, numRead);
-    *firstTS = make_time(timeHigh_, timeLow_);
+    *firstTS = makeTime(timeHigh_, timeLow_);
     // need to still run this loop to update the time state of the decoder
     // and capture rollover etc
     for (; i < numRead; i++) {
@@ -210,12 +210,10 @@ public:
     }
     return (hasValidTime_);
   }
+  void setTimeMultiplier(uint32_t mult) override { timeMult_ = mult; }
 
 private:
-  inline static timestamp_t make_time(timestamp_t high, uint16_t low)
-  {
-    return ((high | low) * 1000);
-  }
+  inline timestamp_t makeTime(timestamp_t high, uint16_t low) { return ((high | low) * timeMult_); }
 
   inline static timestamp_t update_high_time(uint16_t t, timestamp_t timeHigh)
   {
@@ -270,6 +268,7 @@ private:
   timestamp_t timeHigh_{0};     // time stamp high + rollover bits
   uint8_t currentPolarity_{0};  // polarity for vector event
   uint16_t currentBaseX_{0};    // X coordinate basis for vector event
+  uint32_t timeMult_{1000};     // default: time in nanoseconds
   bool hasValidTime_{false};
 };
 }  // namespace evt3
