@@ -37,6 +37,7 @@ public:
   virtual void setTimeBase(const uint64_t timeBase) = 0;
   virtual bool findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS) = 0;
   virtual void setTimeMultiplier(uint32_t mult) = 0;
+  virtual void setGeometry(uint16_t width, uint16_t height) = 0;
 };
 
 }  // namespace event_array_codecs

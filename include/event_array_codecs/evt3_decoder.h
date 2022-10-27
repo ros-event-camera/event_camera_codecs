@@ -44,8 +44,10 @@ public:
       switch (buffer[i].code) {
         case Code::ADDR_X: {
           const AddrX * e = reinterpret_cast<const AddrX *>(&buffer[i]);
-          processor->eventCD(makeTime(timeHigh_, timeLow_), e->x, ey_, e->polarity);
-          numEvents_++;
+          if (e->x <= width_ && ey_ <= height_) {
+            processor->eventCD(makeTime(timeHigh_, timeLow_), e->x, ey_, e->polarity);
+            numEvents_++;
+          }
         } break;
         case Code::ADDR_Y: {
           const AddrY * e = reinterpret_cast<const AddrY *>(&buffer[i]);
@@ -69,9 +71,11 @@ public:
           const Vect8 * b = reinterpret_cast<const Vect8 *>(&buffer[i]);
           for (int i = 0; i < 8; i++) {
             if (b->valid & (1 << i)) {
-              processor->eventCD(
-                makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
-              numEvents_++;
+              const uint16_t ex = currentBaseX_ + i;
+              if (ex <= width_ && ey_ <= height_) {
+                processor->eventCD(makeTime(timeHigh_, timeLow_), ex, ey_, currentPolarity_);
+                numEvents_++;
+              }
             }
           }
           currentBaseX_ += 8;
@@ -81,9 +85,12 @@ public:
           const Vect12 * b = reinterpret_cast<const Vect12 *>(&buffer[i]);
           for (int i = 0; i < 12; i++) {
             if (b->valid & (1 << i)) {
-              processor->eventCD(
-                makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
-              numEvents_++;
+              const uint16_t ex = currentBaseX_ + i;
+              if (ex <= width_ && ey_ <= height_) {
+                processor->eventCD(
+                  makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
+                numEvents_++;
+              }
             }
           }
           currentBaseX_ += 12;
@@ -211,6 +218,11 @@ public:
     return (hasValidTime_);
   }
   void setTimeMultiplier(uint32_t mult) override { timeMult_ = mult; }
+  void setGeometry(uint16_t width, uint16_t height) override
+  {
+    width_ = width;
+    height_ = height;
+  }
 
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low) { return ((high | low) * timeMult_); }
@@ -269,7 +281,9 @@ private:
   uint8_t currentPolarity_{0};  // polarity for vector event
   uint16_t currentBaseX_{0};    // X coordinate basis for vector event
   uint32_t timeMult_{1000};     // default: time in nanoseconds
-  bool hasValidTime_{false};
+  bool hasValidTime_{false};    // false until time is valid
+  uint16_t width_{0};           // sensor geometry
+  uint16_t height_{0};          // sensor geometry
 };
 }  // namespace evt3
 }  // namespace event_array_codecs

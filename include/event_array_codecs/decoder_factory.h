@@ -47,14 +47,15 @@ public:
     return (std::shared_ptr<mono::Decoder<EventProcT>>());
   }
   // factory method to get decoder from shared pool
-  std::shared_ptr<Decoder<EventProcT>> getInstance(const std::string & codec)
+  Decoder<EventProcT> * getInstance(const std::string & codec, uint16_t width, uint16_t height)
   {
     auto it = decoderMap_.find(codec);
     if (it == decoderMap_.end()) {
       auto elem = decoderMap_.insert({codec, newInstance(codec)});
-      return (elem.first->second);
+      elem.first->second->setGeometry(width, height);
+      return (elem.first->second.get());
     }
-    return (it->second);
+    return (it->second.get());
   }
 
 private:

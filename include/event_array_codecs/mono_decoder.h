@@ -78,6 +78,9 @@ public:
   void setTimeMultiplier(uint32_t) override
   { /* ignored */
   }
+  void setGeometry(uint16_t, uint16_t) override
+  { /* ignored */
+  }
 
 private:
   // --------------------- variables
