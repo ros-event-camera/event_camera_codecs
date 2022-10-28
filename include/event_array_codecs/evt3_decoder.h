@@ -44,7 +44,7 @@ public:
       switch (buffer[i].code) {
         case Code::ADDR_X: {
           const AddrX * e = reinterpret_cast<const AddrX *>(&buffer[i]);
-          if (e->x <= width_ && ey_ <= height_) {
+          if (e->x < width_ && ey_ < height_) {
             processor->eventCD(makeTime(timeHigh_, timeLow_), e->x, ey_, e->polarity);
             numEvents_++;
           }
@@ -72,7 +72,7 @@ public:
           for (int i = 0; i < 8; i++) {
             if (b->valid & (1 << i)) {
               const uint16_t ex = currentBaseX_ + i;
-              if (ex <= width_ && ey_ <= height_) {
+              if (ex < width_ && ey_ < height_) {
                 processor->eventCD(makeTime(timeHigh_, timeLow_), ex, ey_, currentPolarity_);
                 numEvents_++;
               }
@@ -86,7 +86,7 @@ public:
           for (int i = 0; i < 12; i++) {
             if (b->valid & (1 << i)) {
               const uint16_t ex = currentBaseX_ + i;
-              if (ex <= width_ && ey_ <= height_) {
+              if (ex < width_ && ey_ < height_) {
                 processor->eventCD(
                   makeTime(timeHigh_, timeLow_), currentBaseX_ + i, ey_, currentPolarity_);
                 numEvents_++;
