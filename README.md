@@ -38,6 +38,45 @@ cd ~/ws
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # (optionally add -DCMAKE_EXPORT_COMPILE_COMMANDS=1)
 ```
 
+## API example
+
+```
+#include <event_array_codecs/decoder.h>
+#include <event_array_codecs/decoder_factory.h>
+
+class MyProcessor : public event_array_codecs::EventProcessor
+{
+public:
+  inline void eventCD(uint64_t, uint16_t ex, uint16_t ey, uint8_t polarity) override {
+    // do useful stuff here
+  }
+  void eventExtTrigger(uint64_t, uint8_t, uint8_t) override {}
+  void finished() override{}; // called after no more events decoded in this packet
+  void rawData(const char *, size_t) override{};  // passthrough of raw data
+};
+
+MyProcessor processor;
+
+// the decoder factory method is templated on the event processor
+// to permit inlining of methods like eventCD() above.
+
+event_array_codecs::DecoderFactory<MyProcessor> decoderFactory;
+
+// to get callbacks into MyProcessor, feed the message buffer
+// into the decoder
+
+void eventMsg(const EventArray::ConstPtr & msg) {
+  // will create a new decoder on first call, from then on returns existing one
+  auto decoder = decoderFactory.getInstance(msg->encoding, msg->width, msg->height);
+  if (!decoder) { // msg->encoding was invalid
+    return;
+  }
+  decoder->setTimeBase(msg->time_base); // may not be needed for some encodings but doesn't hurt
+  // the decode() will trigger callbacks to processor
+  decoder->decode(&(msg->events[0]), msg->events.size(), &processor);
+}
+```
+
 ## Tools
 
 ### Performance measurement of decoder
