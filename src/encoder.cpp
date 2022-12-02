@@ -15,6 +15,7 @@
 
 #include "event_array_codecs/encoder.h"
 
+#include "event_array_codecs/evt3_encoder.h"
 #include "event_array_codecs/mono_encoder.h"
 
 namespace event_array_codecs
@@ -23,6 +24,9 @@ std::shared_ptr<Encoder> Encoder::newInstance(const std::string & codec)
 {
   if (codec == "mono" || codec == "trigger") {
     return (std::make_shared<mono::Encoder>());
+  }
+  if (codec == "evt3") {
+    return (std::make_shared<evt3::Encoder>());
   }
   return (std::shared_ptr<Encoder>());
 }

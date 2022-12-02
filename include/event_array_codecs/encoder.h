@@ -31,8 +31,9 @@ public:
   // ---- interface methods
   virtual void setBuffer(std::vector<uint8_t> * buf) = 0;
   virtual void setSensorTime(uint64_t sensorTime) = 0;
-  virtual void encodeCD(uint32_t dt, uint16_t x, uint16_t y, uint8_t p) = 0;
-  virtual void encodeExtTrigger(uint32_t dt, uint8_t edge, uint8_t id) = 0;
+  // time difference dt is in nanoseconds since last setSensorTime
+  virtual void encodeCD(int32_t dt, uint16_t x, uint16_t y, uint8_t p) = 0;
+  virtual void encodeExtTrigger(int32_t dt, uint8_t edge, uint8_t id) = 0;
   virtual void flush() = 0;
   // ----- static methods
   // factory method to create new instance
