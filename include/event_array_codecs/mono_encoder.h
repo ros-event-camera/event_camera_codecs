@@ -37,16 +37,18 @@ public:
     // mono encoding relies on sensor time being provided by message header
   }
 
-  inline void encodeCD(uint32_t dt, uint16_t x, uint16_t y, uint8_t p) override
+  inline void encodeCD(int32_t dt, uint16_t x, uint16_t y, uint8_t p) override
   {
+    dt = std::max(dt, 0);
     const auto old_size = bufferPtr_->size();
     bufferPtr_->resize(old_size + bytes_per_event);
     uint64_t * packed = reinterpret_cast<uint64_t *>(&(*bufferPtr_)[old_size]);
     *packed = static_cast<uint64_t>(p) << 63 | static_cast<uint64_t>(y) << 48 |
               static_cast<uint64_t>(x) << 32 | static_cast<uint64_t>(dt);
   }
-  inline void encodeExtTrigger(uint32_t dt, uint8_t edge, uint8_t id) override
+  inline void encodeExtTrigger(int32_t dt, uint8_t edge, uint8_t id) override
   {
+    dt = std::max(dt, 0);
     const auto old_size = bufferPtr_->size();
     bufferPtr_->resize(old_size + bytes_per_event);
     uint64_t * packed = reinterpret_cast<uint64_t *>(&(*bufferPtr_)[old_size]);

@@ -76,10 +76,6 @@ struct __attribute__((packed)) Event
 struct __attribute__((packed)) AddrY
 {
   AddrY(uint16_t y_a, uint8_t s) : y(y_a), system_type(s), code(Code::ADDR_Y) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t y : 11;
   uint16_t system_type : 1;
   uint16_t code : 4;
@@ -88,10 +84,6 @@ struct __attribute__((packed)) AddrY
 struct __attribute__((packed)) AddrX
 {
   AddrX(uint16_t x_a, uint8_t p) : x(x_a), polarity(p), code(Code::ADDR_X) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t x : 11;
   uint16_t polarity : 1;
   uint16_t code : 4;
@@ -99,12 +91,7 @@ struct __attribute__((packed)) AddrX
 
 struct __attribute__((packed)) TimeHigh
 {
-  TimeHigh(uint32_t ts_usec) : t(ts_usec >> 12), code(Code::TIME_HIGH) {}
-  uint32_t write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-    return (static_cast<uint32_t>(t) << 12);
-  }
+  TimeHigh(uint32_t ts_usec) : t(ts_usec), code(Code::TIME_HIGH) {}
   uint16_t t : 12;
   uint16_t code : 4;
 };
@@ -112,10 +99,6 @@ struct __attribute__((packed)) TimeHigh
 struct __attribute__((packed)) TimeLow
 {
   TimeLow(uint32_t ts_usec) : t(ts_usec & 0x00000FFF), code(Code::TIME_LOW) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t t : 12;
   uint16_t code : 4;
 };
@@ -123,10 +106,6 @@ struct __attribute__((packed)) TimeLow
 struct __attribute__((packed)) Others
 {
   Others(uint16_t s) : subtype(s), code(Code::OTHERS) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t subtype : 12;
   uint16_t code : 4;
 };
@@ -134,10 +113,6 @@ struct __attribute__((packed)) Others
 struct __attribute__((packed)) VectBaseX
 {
   VectBaseX(uint16_t xa, uint16_t pa) : x(xa), pol(pa), code(Code::VECT_BASE_X) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t x : 11;
   uint16_t pol : 1;
   uint16_t code : 4;
@@ -146,10 +121,6 @@ struct __attribute__((packed)) VectBaseX
 struct __attribute__((packed)) Vect8
 {
   Vect8(uint16_t v) : valid(v), code(Code::VECT_8) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t valid : 8;
   uint16_t unused : 4;
   uint16_t code : 4;
@@ -158,10 +129,6 @@ struct __attribute__((packed)) Vect8
 struct __attribute__((packed)) Vect12
 {
   Vect12(uint16_t v) : valid(v), code(Code::VECT_12) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t valid : 12;
   uint16_t code : 4;
 };
@@ -169,10 +136,6 @@ struct __attribute__((packed)) Vect12
 struct __attribute__((packed)) ExtTrigger
 {
   ExtTrigger(uint8_t e, uint8_t id_a) : edge(e), id(id_a), code(Code::EXT_TRIGGER) {}
-  void write(std::fstream & out) const
-  {
-    out.write(reinterpret_cast<const char *>(this), sizeof(*this));
-  }
   uint16_t edge : 1;
   uint16_t unused : 7;
   uint16_t id : 4;
