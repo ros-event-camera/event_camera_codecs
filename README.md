@@ -3,6 +3,9 @@
 This repository holds code for decoding
 [event_array_msgs](https://github.com/berndpfrommer/event_array_msgs). It
 builds under both ROS1 and ROS2.
+You can use this decoder from python via the
+[event_array_py repository](https://github.com/berndpfrommer/event_array_py).
+
 
 ## Supported platforms
 
