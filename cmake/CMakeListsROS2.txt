@@ -23,9 +23,7 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 
 set(ROS2_DEPENDENCIES
-  "event_array_msgs"
-  "rclcpp"
-)
+  "event_array_msgs")
 
 foreach(pkg ${ROS2_DEPENDENCIES})
   find_package(${pkg} REQUIRED)
@@ -63,13 +61,12 @@ install(
 )
 
 install(
-  TARGETS   codec
+  TARGETS codec
   EXPORT codecTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-  )
+  INCLUDES DESTINATION include)
 
 # the node must go into the project specific lib directory or else
 # the launch file will not find it

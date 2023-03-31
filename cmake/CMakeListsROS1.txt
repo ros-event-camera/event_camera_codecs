@@ -17,19 +17,16 @@ add_compile_options(-Wall -Wextra -pedantic -Werror)
 add_definitions(-DUSING_ROS_1)
 
 find_package(catkin REQUIRED COMPONENTS
-  event_array_msgs
-  roscpp
-  )
+  event_array_msgs)
   
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES codec
-  CATKIN_DEPENDS event_array_msgs roscpp)
+  CATKIN_DEPENDS event_array_msgs)
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
-)
+  ${catkin_INCLUDE_DIRS})
 
 #
 # ----- encoding/decoding library
