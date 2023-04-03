@@ -76,7 +76,14 @@ void eventMsg(const EventArray::ConstPtr & msg) {
   }
   decoder->setTimeBase(msg->time_base); // may not be needed for some encodings but doesn't hurt
   // the decode() will trigger callbacks to processor
-  decoder->decode(&(msg->events[0]), msg->events.size(), &processor);
+  decoder->decode(msg->events.data(), msg->events.size(), &processor);
+  /* There is an alternative interface for decoding only up to (but not including)
+     a certain time stamp:
+  uint64_t timeLimit{whatever}; // (input) time limit, sensor time, in nanoseconds
+  uint64_t nextTime{0}; // (output) will contain time stamp (if any) of yet undecoded event
+  const size_t bytesDecoded = decoder->decodeUntil(
+    msg->events.data(), msg->events.size(), &processor, timeLimit, &nextTime);
+  */
 }
 ```
 

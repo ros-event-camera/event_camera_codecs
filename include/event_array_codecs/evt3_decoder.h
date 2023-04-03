@@ -38,6 +38,31 @@ public:
 
   void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
+    struct NoTimeLimit
+    {
+      static bool isInFuture(uint64_t, uint64_t) { return (false); }
+    };
+    doDecode<NoTimeLimit>(buf, bufSize, processor, 0, nullptr, nullptr);
+  }
+
+  size_t decodeUntil(
+    const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
+    uint64_t * nextTime) override
+  {
+    struct TimeLimit
+    {
+      static bool isInFuture(uint64_t t, uint64_t limit) { return (t >= limit); }
+    };
+    size_t numConsumed{0};
+    doDecode<TimeLimit>(buf, bufSize, processor, timeLimit, &numConsumed, nextTime);
+    return (numConsumed);
+  }
+
+  template <class TimeLimiterT>
+  void doDecode(
+    const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
+    size_t * numConsumed, uint64_t * nextTime)
+  {
     const size_t numRead = bufSize / sizeof(Event);
     const Event * buffer = reinterpret_cast<const Event *>(buf);
     for (size_t i = findValidTime(buffer, numRead); i < numRead; i++) {
@@ -56,6 +81,13 @@ public:
         case Code::TIME_LOW: {
           const TimeLow * e = reinterpret_cast<const TimeLow *>(&buffer[i]);
           timeLow_ = e->t;
+          if (TimeLimiterT::isInFuture(makeTime(timeHigh_, timeLow_), timeLimit)) {
+            // stopping early because we reached the time limit
+            *numConsumed = i * sizeof(Event);
+            *nextTime = makeTime(timeHigh_, timeLow_);
+            processor->finished();
+            return;
+          }
         } break;
         case Code::TIME_HIGH: {
           const TimeHigh * e = reinterpret_cast<const TimeHigh *>(&buffer[i]);
@@ -123,8 +155,10 @@ public:
           break;
       }
     }
+    *numConsumed = bufSize;  // have consumed the entire buffer
     processor->finished();
   }
+
   bool summarize(
     const uint8_t * buf, size_t bufSize, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) override
