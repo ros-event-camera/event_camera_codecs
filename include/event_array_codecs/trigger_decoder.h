@@ -45,6 +45,26 @@ public:
     processor->finished();
   }
 
+  size_t decodeUntil(
+    const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
+    uint64_t * nextTime) override
+  {
+    for (const uint8_t * p_u8 = buf; p_u8 < buf + bufSize; p_u8 += 8) {
+      const uint64_t & p = *reinterpret_cast<const uint64_t *>(p_u8);
+      const uint64_t t = timeBase_ + static_cast<uint32_t>(p & 0xFFFFFFFFULL);
+      if (t >= timeLimit) {
+        processor->finished();
+        *nextTime = t;
+        return (p_u8 - buf);
+      }
+      processor->eventExtTrigger(
+        t, static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
+        static_cast<uint8_t>((p >> 48) & 0x7FFFULL));
+    }
+    processor->finished();
+    return (bufSize);
+  }
+
   bool summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) override

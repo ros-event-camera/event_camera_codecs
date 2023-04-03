@@ -31,6 +31,12 @@ public:
   virtual ~Decoder() {}
   // ---- interface methods
   virtual void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
+  // decodes messages up to, but not including, timeLimit. Will return the number
+  // of bytes consumed, and, if not completely exhausting the buffer, set
+  // nextTime to be the time following the last decoded event (if such exists)
+  virtual size_t decodeUntil(
+    const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
+    uint64_t * nextTime) = 0;
   virtual bool summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) = 0;
