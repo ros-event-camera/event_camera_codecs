@@ -155,7 +155,9 @@ public:
           break;
       }
     }
-    *numConsumed = bufSize;  // have consumed the entire buffer
+    if (numConsumed != nullptr) {
+      *numConsumed = bufSize;  // have consumed the entire buffer
+    }
     processor->finished();
   }
 
