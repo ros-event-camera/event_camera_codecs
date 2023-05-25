@@ -9,11 +9,12 @@ You can use this decoder from python via the
 
 ## Supported platforms
 
-Currently tested on Ubuntu 20.04 under under ROS Noetic and ROS2 Galactic.
+Currently tested on Ubuntu 20.04 under ROS Noetic and ROS2 Galactic
+and under Ubuntu 22.04 / ROS2 Humble.
 
 
 ## How to build
-Create a workspace (``~/ws``), clone this repo, and use ``wstool``
+Create a workspace, clone this repo, and use ``vcs``
 to pull in the remaining dependencies:
 
 ```
@@ -21,10 +22,9 @@ pkg=event_array_codecs
 mkdir -p ~/$pkg/src
 cd ~/ws
 git clone https://github.com/berndpfrommer/${pkg}.git src/${pkg}
-wstool init src src/${pkg}/${pkg}.rosinstall
-# to update an existing space:
-# wstool merge -t src src/${pkg}/${pkg}.rosinstall
-# wstool update -t src
+cd src
+vcs import < ${pkg}/${pkg}.repos
+cd ..
 ```
 
 ### configure and build on ROS1:
@@ -43,7 +43,7 @@ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  #
 
 ## API example
 
-```
+```cpp
 #include <event_array_codecs/decoder.h>
 #include <event_array_codecs/decoder_factory.h>
 
