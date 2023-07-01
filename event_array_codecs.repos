@@ -1,5 +1,5 @@
 repositories:
   event_array_msgs:
     type: git
-    url: https://github.com/berndpfrommer/event_array_msgs.git
+    url: https://github.com/ros-event-camera/event_array_msgs.git
     version: master

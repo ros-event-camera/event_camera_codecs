@@ -1,10 +1,10 @@
 # event_array_codecs
 
 This repository holds code for decoding
-[event_array_msgs](https://github.com/berndpfrommer/event_array_msgs). It
+[event_array_msgs](https://github.com/ros-event-camera/event_array_msgs). It
 builds under both ROS1 and ROS2.
 You can use this decoder from python via the
-[event_array_py repository](https://github.com/berndpfrommer/event_array_py).
+[event_array_py repository](https://github.com/ros-event-camera/event_array_py).
 
 
 ## Supported platforms
@@ -21,7 +21,7 @@ to pull in the remaining dependencies:
 pkg=event_array_codecs
 mkdir -p ~/$pkg/src
 cd ~/ws
-git clone https://github.com/berndpfrommer/${pkg}.git src/${pkg}
+git clone https://github.com/ros-event-camera/${pkg}.git src/${pkg}
 cd src
 vcs import < ${pkg}/${pkg}.repos
 cd ..
