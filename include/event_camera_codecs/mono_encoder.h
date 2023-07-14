@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__MONO_ENCODER_H_
-#define EVENT_ARRAY_CODECS__MONO_ENCODER_H_
+#ifndef EVENT_CAMERA_CODECS__MONO_ENCODER_H_
+#define EVENT_CAMERA_CODECS__MONO_ENCODER_H_
 
 #include <stdint.h>
 
@@ -22,11 +22,11 @@
 #include <string>
 #include <vector>
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 namespace mono
 {
-class Encoder : public event_array_codecs::Encoder
+class Encoder : public event_camera_codecs::Encoder
 {
 public:
   const size_t bytes_per_event = 8;
@@ -65,5 +65,5 @@ private:
 };
 
 }  // namespace mono
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__MONO_ENCODER_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__MONO_ENCODER_H_

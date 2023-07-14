@@ -20,8 +20,8 @@
 #include <iostream>
 #include <vector>
 
-#include "event_array_codecs/decoder_factory.h"
-#include "event_array_codecs/event_processor.h"
+#include "event_camera_codecs/decoder_factory.h"
+#include "event_camera_codecs/event_processor.h"
 
 void usage()
 {
@@ -39,7 +39,7 @@ static void skip_header(std::fstream & in)
   }
 }
 
-struct EventCounter : public event_array_codecs::EventProcessor
+struct EventCounter : public event_camera_codecs::EventProcessor
 {
   void eventCD(uint64_t t, uint16_t, uint16_t, uint8_t)
   {
@@ -116,7 +116,7 @@ int main(int argc, char ** argv)
 
   std::vector<char> buffer(bufferSize);
   EventCounter counter;
-  event_array_codecs::DecoderFactory<EventCounter> factory;
+  event_camera_codecs::DecoderFactory<EventCounter> factory;
   auto decoder = factory.newInstance(codec);
   if (!decoder) {
     std::cout << "unknown codec: " << codec << std::endl;

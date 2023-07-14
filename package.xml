@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>event_array_codecs</name>
+  <name>event_camera_codecs</name>
   <version>1.0.0</version>
-  <description>package to encode and decode event_array_msgs</description>
+  <description>package to encode and decode event_camera_msgs</description>
   <maintainer email="bernd.pfrommer@gmail.com">Bernd Pfrommer</maintainer>
   <license>Apache2</license>
 
@@ -19,7 +19,7 @@
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
   <!-- common ROS1/ROS2 dependencies -->
-  <depend>event_array_msgs</depend>  
+  <depend>event_camera_msgs</depend>  
   
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml"/>

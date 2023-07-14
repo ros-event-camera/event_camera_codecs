@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__EVENT_PROCESSOR_H_
-#define EVENT_ARRAY_CODECS__EVENT_PROCESSOR_H_
+#ifndef EVENT_CAMERA_CODECS__EVENT_PROCESSOR_H_
+#define EVENT_CAMERA_CODECS__EVENT_PROCESSOR_H_
 
 #include <cstddef>
 #include <cstdint>
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 class EventProcessor
 {
@@ -30,5 +30,5 @@ public:
   virtual void finished() = 0;
   virtual void rawData(const char * data, size_t len) = 0;
 };
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__EVENT_PROCESSOR_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__EVENT_PROCESSOR_H_

@@ -13,23 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__MONO_DECODER_H_
-#define EVENT_ARRAY_CODECS__MONO_DECODER_H_
+#ifndef EVENT_CAMERA_CODECS__MONO_DECODER_H_
+#define EVENT_CAMERA_CODECS__MONO_DECODER_H_
 
 #include <stdint.h>
 
 #include <memory>
 #include <string>
 
-#include "event_array_codecs/decoder.h"
-#include "event_array_codecs/event_processor.h"
+#include "event_camera_codecs/decoder.h"
+#include "event_camera_codecs/event_processor.h"
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 namespace mono
 {
 template <class EventProcT>
-class Decoder : public event_array_codecs::Decoder<EventProcT>
+class Decoder : public event_camera_codecs::Decoder<EventProcT>
 {
 public:
   using timestamp_t = uint64_t;
@@ -108,5 +108,5 @@ private:
   uint64_t timeBase_{0};
 };
 }  // namespace mono
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__MONO_DECODER_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__MONO_DECODER_H_

@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__NOOP_EVENT_PROCESSOR_H_
-#define EVENT_ARRAY_CODECS__NOOP_EVENT_PROCESSOR_H_
+#ifndef EVENT_CAMERA_CODECS__NOOP_EVENT_PROCESSOR_H_
+#define EVENT_CAMERA_CODECS__NOOP_EVENT_PROCESSOR_H_
 
-#include <event_array_codecs/event_processor.h>
+#include <event_camera_codecs/event_processor.h>
 
 #include <cstddef>
 #include <cstdint>
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 class NoOpEventProcessor : public EventProcessor
 {
@@ -30,5 +30,5 @@ public:
   void finished() override {}
   void rawData(const char *, size_t) override {}
 };
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__NOOP_EVENT_PROCESSOR_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__NOOP_EVENT_PROCESSOR_H_

@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "event_array_codecs/encoder.h"
+#include "event_camera_codecs/encoder.h"
 
-#include "event_array_codecs/evt3_encoder.h"
-#include "event_array_codecs/mono_encoder.h"
+#include "event_camera_codecs/evt3_encoder.h"
+#include "event_camera_codecs/mono_encoder.h"
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 std::shared_ptr<Encoder> Encoder::newInstance(const std::string & codec)
 {
@@ -30,4 +30,4 @@ std::shared_ptr<Encoder> Encoder::newInstance(const std::string & codec)
   }
   return (std::shared_ptr<Encoder>());
 }
-}  // namespace event_array_codecs
+}  // namespace event_camera_codecs

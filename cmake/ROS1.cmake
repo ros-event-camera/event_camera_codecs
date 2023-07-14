@@ -17,12 +17,12 @@ add_compile_options(-Wall -Wextra -pedantic -Werror)
 add_definitions(-DUSING_ROS_1)
 
 find_package(catkin REQUIRED COMPONENTS
-  event_array_msgs)
+  event_camera_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES codec
-  CATKIN_DEPENDS event_array_msgs)
+  CATKIN_DEPENDS event_camera_msgs)
 
 include_directories(
   include
