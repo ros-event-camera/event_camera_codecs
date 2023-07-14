@@ -26,8 +26,8 @@
 #include <iostream>
 #include <vector>
 
-#include "event_array_codecs/decoder.h"
-#include "event_array_codecs/event_processor.h"
+#include "event_camera_codecs/decoder.h"
+#include "event_camera_codecs/event_processor.h"
 
 void usage()
 {
@@ -35,7 +35,7 @@ void usage()
   std::cout << "metavision_test -i name_of_raw_file -c codec (e.g. evt3)" << std::endl;
 }
 
-struct EventCounter : public event_array_codecs::EventProcessor
+struct EventCounter : public event_camera_codecs::EventProcessor
 {
   void process_events(const Metavision::EventCD * begin, const Metavision::EventCD * end)
   {
@@ -136,7 +136,7 @@ int main(int argc, char ** argv)
   bool stop_decoding = false;
 
   i_eventsstream->start();
-  auto decoder = event_array_codecs::Decoder::newInstance(codec);
+  auto decoder = event_camera_codecs::Decoder::newInstance(codec);
   if (!decoder) {
     std::cerr << "unknown codec: " << codec << std::endl;
   }

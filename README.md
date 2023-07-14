@@ -1,10 +1,10 @@
-# event_array_codecs
+# event_camera_codecs
 
 This repository holds code for decoding
-[event_array_msgs](https://github.com/ros-event-camera/event_array_msgs). It
+[event_camera_msgs](https://github.com/ros-event-camera/event_camera_msgs). It
 builds under both ROS1 and ROS2.
 You can use this decoder from python via the
-[event_array_py repository](https://github.com/ros-event-camera/event_array_py).
+[event_camera_py repository](https://github.com/ros-event-camera/event_camera_py).
 
 
 ## Supported platforms
@@ -18,7 +18,7 @@ Create a workspace, clone this repo, and use ``vcs``
 to pull in the remaining dependencies:
 
 ```
-pkg=event_array_codecs
+pkg=event_camera_codecs
 mkdir -p ~/$pkg/src
 cd ~/ws
 git clone https://github.com/ros-event-camera/${pkg}.git src/${pkg}
@@ -44,10 +44,10 @@ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  #
 ## API example
 
 ```cpp
-#include <event_array_codecs/decoder.h>
-#include <event_array_codecs/decoder_factory.h>
+#include <event_camera_codecs/decoder.h>
+#include <event_camera_codecs/decoder_factory.h>
 
-class MyProcessor : public event_array_codecs::EventProcessor
+class MyProcessor : public event_camera_codecs::EventProcessor
 {
 public:
   inline void eventCD(uint64_t, uint16_t ex, uint16_t ey, uint8_t polarity) override {
@@ -63,7 +63,7 @@ MyProcessor processor;
 // the decoder factory method is templated on the event processor
 // to permit inlining of methods like eventCD() above.
 
-event_array_codecs::DecoderFactory<MyProcessor> decoderFactory;
+event_camera_codecs::DecoderFactory<MyProcessor> decoderFactory;
 
 // to get callbacks into MyProcessor, feed the message buffer
 // into the decoder
@@ -94,13 +94,13 @@ void eventMsg(const EventArray::ConstPtr & msg) {
 ROS1:
 ```
 # decode a raw file and measure performance
-rosrun event_array_codecs perf -i foo.raw
+rosrun event_camera_codecs perf -i foo.raw
 ```
 
 ROS2 examples:
 ```
 # decode a raw file and measure performance
-ros2 run event_array_codecs perf -i foo.raw
+ros2 run event_camera_codecs perf -i foo.raw
 ```
 
 ## License

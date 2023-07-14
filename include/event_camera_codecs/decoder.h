@@ -13,16 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__DECODER_H_
-#define EVENT_ARRAY_CODECS__DECODER_H_
+#ifndef EVENT_CAMERA_CODECS__DECODER_H_
+#define EVENT_CAMERA_CODECS__DECODER_H_
 
-#include <event_array_codecs/noop_event_processor.h>
+#include <event_camera_codecs/noop_event_processor.h>
 #include <stdint.h>
 
 #include <memory>
 #include <string>
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 template <class EventProcT = NoOpEventProcessor>
 class Decoder
@@ -46,5 +46,5 @@ public:
   virtual void setGeometry(uint16_t width, uint16_t height) = 0;
 };
 
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__DECODER_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__DECODER_H_

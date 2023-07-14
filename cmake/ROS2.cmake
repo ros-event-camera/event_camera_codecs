@@ -23,7 +23,7 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 
 set(ROS2_DEPENDENCIES
-  "event_array_msgs")
+  "event_camera_msgs")
 
 foreach(pkg ${ROS2_DEPENDENCIES})
   find_package(${pkg} REQUIRED)

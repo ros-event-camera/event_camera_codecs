@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EVENT_ARRAY_CODECS__EVT3_TYPES_H_
-#define EVENT_ARRAY_CODECS__EVT3_TYPES_H_
+#ifndef EVENT_CAMERA_CODECS__EVT3_TYPES_H_
+#define EVENT_CAMERA_CODECS__EVT3_TYPES_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,7 +22,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace event_array_codecs
+namespace event_camera_codecs
 {
 namespace evt3
 {
@@ -197,5 +197,5 @@ inline std::string toString(const SubType s)
   return ("UNKNOWN");
 }
 }  // end of namespace evt3
-}  // namespace event_array_codecs
-#endif  // EVENT_ARRAY_CODECS__EVT3_TYPES_H_
+}  // namespace event_camera_codecs
+#endif  // EVENT_CAMERA_CODECS__EVT3_TYPES_H_
