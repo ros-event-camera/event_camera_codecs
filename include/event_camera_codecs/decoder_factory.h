@@ -23,7 +23,6 @@
 #include <event_camera_codecs/trigger_decoder.h>
 #include <stdint.h>
 
-#include <event_camera_msgs/msg/event_packet.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -50,10 +49,9 @@ public:
 };
 
 template <class EventProcT>
-class DecoderFactory<event_camera_msgs::msg::EventPacket, EventProcT>
+class DecoderFactory<EventPacket, EventProcT>
 {
 public:
-  using EventPacket = event_camera_msgs::msg::EventPacket;
   std::shared_ptr<Decoder<EventPacket, EventProcT>> newInstance(const std::string & codec)
   {
     if (codec == "evt3") {

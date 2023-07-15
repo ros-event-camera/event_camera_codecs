@@ -23,8 +23,6 @@
 #include "event_camera_codecs/decoder_factory.h"
 #include "event_camera_codecs/event_processor.h"
 
-using EventPacket = event_camera_msgs::msg::EventPacket;
-
 void usage()
 {
   std::cout << "usage:" << std::endl;
@@ -118,7 +116,7 @@ int main(int argc, char ** argv)
 
   std::vector<char> buffer(bufferSize);
   EventCounter counter;
-  event_camera_codecs::DecoderFactory<EventPacket, EventCounter> factory;
+  event_camera_codecs::DecoderFactory<event_camera_codecs::EventPacket, EventCounter> factory;
   auto decoder = factory.newInstance(codec);
   if (!decoder) {
     std::cout << "unknown codec: " << codec << std::endl;

@@ -46,9 +46,8 @@ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  #
 ```cpp
 #include <event_camera_codecs/decoder.h>
 #include <event_camera_codecs/decoder_factory.h>
-#include <event_camera_msgs/msgs/event_packet.hpp>
 
-using EventPacket = event_camera_msgs::EventPacket;
+using event_camera_codecs::EventPacket;
 
 class MyProcessor : public event_camera_codecs::EventProcessor
 {
