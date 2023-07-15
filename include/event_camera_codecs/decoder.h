@@ -21,13 +21,17 @@
 
 #ifdef USING_ROS_1
 #include <event_camera_msgs/EventPacket.h>
-namespace event_camera_codecs {
-  using EventPacket = event_camera_msgs::EventPacket;
+
+namespace event_camera_codecs
+{
+using EventPacket = event_camera_msgs::EventPacket;
 }
 #else
 #include <event_camera_msgs/msg/event_packet.hpp>
-namespace event_camera_codecs {
-  using EventPacket = event_camera_msgs::msg::EventPacket;
+
+namespace event_camera_codecs
+{
+using EventPacket = event_camera_msgs::msg::EventPacket;
 }
 #endif
 
