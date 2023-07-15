@@ -40,6 +40,7 @@ target_include_directories(codec
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
+ament_target_dependencies(codec ${ROS2_DEPENDENCIES})
 ament_export_targets(codecTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${ROS2_DEPENDENCIES})
 

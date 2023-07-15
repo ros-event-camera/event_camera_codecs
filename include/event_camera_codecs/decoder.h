@@ -19,12 +19,28 @@
 #include <event_camera_codecs/noop_event_processor.h>
 #include <stdint.h>
 
+#ifdef USING_ROS_1
+#include <event_camera_msgs/EventPacket.h>
+
+namespace event_camera_codecs
+{
+using EventPacket = event_camera_msgs::EventPacket;
+}
+#else
+#include <event_camera_msgs/msg/event_packet.hpp>
+
+namespace event_camera_codecs
+{
+using EventPacket = event_camera_msgs::msg::EventPacket;
+}
+#endif
+
 #include <memory>
 #include <string>
 
 namespace event_camera_codecs
 {
-template <class EventProcT = NoOpEventProcessor>
+template <class MsgT, class EventProcT = NoOpEventProcessor>
 class Decoder
 {
 public:

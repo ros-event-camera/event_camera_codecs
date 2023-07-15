@@ -116,7 +116,7 @@ int main(int argc, char ** argv)
 
   std::vector<char> buffer(bufferSize);
   EventCounter counter;
-  event_camera_codecs::DecoderFactory<EventCounter> factory;
+  event_camera_codecs::DecoderFactory<event_camera_codecs::EventPacket, EventCounter> factory;
   auto decoder = factory.newInstance(codec);
   if (!decoder) {
     std::cout << "unknown codec: " << codec << std::endl;
