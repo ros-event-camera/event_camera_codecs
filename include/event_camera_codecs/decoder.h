@@ -19,12 +19,13 @@
 #include <event_camera_codecs/noop_event_processor.h>
 #include <stdint.h>
 
+#include <event_camera_msgs/msg/event_packet.hpp>
 #include <memory>
 #include <string>
 
 namespace event_camera_codecs
 {
-template <class EventProcT = NoOpEventProcessor>
+template <class MsgT, class EventProcT = NoOpEventProcessor>
 class Decoder
 {
 public:

@@ -23,31 +23,52 @@
 #include <event_camera_codecs/trigger_decoder.h>
 #include <stdint.h>
 
+#include <event_camera_msgs/msg/event_packet.hpp>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
 namespace event_camera_codecs
 {
-template <class EventProcT = NoOpEventProcessor>
+template <class MsgT, class EventProcT = NoOpEventProcessor>
 class DecoderFactory
 {
 public:
   // factory method to create new instance
-  std::shared_ptr<Decoder<EventProcT>> newInstance(const std::string & codec)
+  std::shared_ptr<Decoder<MsgT, EventProcT>> newInstance(const std::string &)
+  {
+    throw std::runtime_error("no decoder available for this message type!");
+  }
+
+  // factory method to get decoder from shared pool
+  Decoder<MsgT, EventProcT> * getInstance(
+    const std::string & codec, uint16_t width, uint16_t height)
+  {
+    throw std::runtime_error("no decoder available for this message type!");
+  }
+};
+
+template <class EventProcT>
+class DecoderFactory<event_camera_msgs::msg::EventPacket, EventProcT>
+{
+public:
+  using EventPacket = event_camera_msgs::msg::EventPacket;
+  std::shared_ptr<Decoder<EventPacket, EventProcT>> newInstance(const std::string & codec)
   {
     if (codec == "evt3") {
-      return (std::make_shared<evt3::Decoder<EventProcT>>());
+      return (std::make_shared<evt3::Decoder<EventPacket, EventProcT>>());
     } else if (codec == "mono") {
-      return (std::make_shared<mono::Decoder<EventProcT>>());
+      return (std::make_shared<mono::Decoder<EventPacket, EventProcT>>());
     } else if (codec == "trigger") {
-      return (std::make_shared<trigger::Decoder<EventProcT>>());
+      return (std::make_shared<trigger::Decoder<EventPacket, EventProcT>>());
     }
     // return null pointer if codec not found
-    return (std::shared_ptr<mono::Decoder<EventProcT>>());
+    return (nullptr);
   }
-  // factory method to get decoder from shared pool
-  Decoder<EventProcT> * getInstance(const std::string & codec, uint16_t width, uint16_t height)
+
+  Decoder<EventPacket, EventProcT> * getInstance(
+    const std::string & codec, uint16_t width, uint16_t height)
   {
     auto it = decoderMap_.find(codec);
     if (it == decoderMap_.end()) {
@@ -59,7 +80,7 @@ public:
   }
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Decoder<EventProcT>>> decoderMap_;
+  std::unordered_map<std::string, std::shared_ptr<Decoder<EventPacket, EventProcT>>> decoderMap_;
 };
 
 }  // namespace event_camera_codecs

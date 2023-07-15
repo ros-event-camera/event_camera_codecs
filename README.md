@@ -41,11 +41,14 @@ cd ~/ws
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # (optionally add -DCMAKE_EXPORT_COMPILE_COMMANDS=1)
 ```
 
-## API example
+## API example (ROS2)
 
 ```cpp
 #include <event_camera_codecs/decoder.h>
 #include <event_camera_codecs/decoder_factory.h>
+#include <event_camera_msgs/msgs/event_packet.hpp>
+
+using EventPacket = event_camera_msgs::EventPacket;
 
 class MyProcessor : public event_camera_codecs::EventProcessor
 {
@@ -63,12 +66,12 @@ MyProcessor processor;
 // the decoder factory method is templated on the event processor
 // to permit inlining of methods like eventCD() above.
 
-event_camera_codecs::DecoderFactory<MyProcessor> decoderFactory;
+event_camera_codecs::DecoderFactory<EventPacket, MyProcessor> decoderFactory;
 
 // to get callbacks into MyProcessor, feed the message buffer
 // into the decoder
 
-void eventMsg(const EventArray::ConstPtr & msg) {
+void eventMsg(const EventPacket::ConstSharedPtr & msg) {
   // will create a new decoder on first call, from then on returns existing one
   auto decoder = decoderFactory.getInstance(msg->encoding, msg->width, msg->height);
   if (!decoder) { // msg->encoding was invalid

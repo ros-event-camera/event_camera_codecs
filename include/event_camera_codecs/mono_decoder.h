@@ -28,8 +28,8 @@ namespace event_camera_codecs
 {
 namespace mono
 {
-template <class EventProcT>
-class Decoder : public event_camera_codecs::Decoder<EventProcT>
+template <class MsgT, class EventProcT>
+class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 {
 public:
   using timestamp_t = uint64_t;
