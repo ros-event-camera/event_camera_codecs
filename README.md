@@ -41,7 +41,7 @@ cd ~/ws
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # (optionally add -DCMAKE_EXPORT_COMPILE_COMMANDS=1)
 ```
 
-## API example (ROS2)
+## API example
 
 ```cpp
 #include <event_camera_codecs/decoder.h>
@@ -68,24 +68,37 @@ MyProcessor processor;
 event_camera_codecs::DecoderFactory<EventPacket, MyProcessor> decoderFactory;
 
 // to get callbacks into MyProcessor, feed the message buffer
-// into the decoder
+// into the decoder like so
 
-void eventMsg(const EventPacket::ConstSharedPtr & msg) {
+void eventMsg(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
   // will create a new decoder on first call, from then on returns existing one
-  auto decoder = decoderFactory.getInstance(msg->encoding, msg->width, msg->height);
+  auto decoder = decoderFactory.getInstance(*msg);
   if (!decoder) { // msg->encoding was invalid
     return;
   }
-  decoder->setTimeBase(msg->time_base); // may not be needed for some encodings but doesn't hurt
   // the decode() will trigger callbacks to processor
-  decoder->decode(msg->events.data(), msg->events.size(), &processor);
-  /* There is an alternative interface for decoding only up to (but not including)
-     a certain time stamp:
-  uint64_t timeLimit{whatever}; // (input) time limit, sensor time, in nanoseconds
-  uint64_t nextTime{0}; // (output) will contain time stamp (if any) of yet undecoded event
-  const size_t bytesDecoded = decoder->decodeUntil(
-    msg->events.data(), msg->events.size(), &processor, timeLimit, &nextTime);
-  */
+  decoder->decode(*msg, &processor);
+}
+
+/* To synchronize with frame based sensors it is useful to play back
+   until a frame boundary is reached. The interface decodeUntil() is provided
+   for this purpose. Sample code below.
+   frameTimes is an ordered queue of frame times.
+   currentFrameTime must be initialized frameTimes.front(), and then
+   removed from frameTimes. */
+
+void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
+  auto decoder = decoderFactory.getInstance(*msg);
+  uint64_t nextTime{0};
+  // The loop will exit when all events in msg have been processed
+  while (decoder->decodeUntil(*msg, &cam_, currentFrameTime, &nextTime)) {
+    // use loop in case multiple frames fit inbetween two events
+    while (!frameTimes.empty() && currentFrameTime <= nextTime) {
+      // processFrameHere()
+      currentFrameTime = frameTimes.front();
+      frameTimes.pop();
+    }
+  }
 }
 ```
 

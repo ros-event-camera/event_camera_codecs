@@ -96,6 +96,13 @@ public:
     }
     return (false);
   }
+
+  bool findFirstSensorTime(const MsgT & msg, uint64_t * firstTS) override
+  {
+    setTimeBase(msg.time_base);
+    return findFirstSensorTime(msg.events.data(), msg.events.size(), firstTS);
+  }
+
   void setTimeMultiplier(uint32_t) override
   { /* ignored */
   }

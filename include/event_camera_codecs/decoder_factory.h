@@ -17,9 +17,11 @@
 #define EVENT_CAMERA_CODECS__DECODER_FACTORY_H_
 
 #include <event_camera_codecs/decoder.h>
+#include <event_camera_codecs/event_packet.h>
 #include <event_camera_codecs/evt3_decoder.h>
 #include <event_camera_codecs/mono_decoder.h>
 #include <event_camera_codecs/noop_event_processor.h>
+#include <event_camera_codecs/ros1_ros2_compat.h>
 #include <event_camera_codecs/trigger_decoder.h>
 #include <stdint.h>
 
@@ -41,6 +43,12 @@ public:
   }
 
   // factory method to get decoder from shared pool
+  Decoder<MsgT, EventProcT> * getInstance(const MsgT & msg)
+  {
+    return (getInstance(msg.encoding, msg.width, msg.height));
+  }
+
+  // (deprecated) factory method to get decoder from shared pool
   Decoder<MsgT, EventProcT> * getInstance(
     const std::string & codec, uint16_t width, uint16_t height)
   {
@@ -65,6 +73,13 @@ public:
     return (nullptr);
   }
 
+  // factory method to get decoder from shared pool
+  Decoder<EventPacket, EventProcT> * getInstance(const EventPacket & msg)
+  {
+    return (getInstance(msg.encoding, msg.width, msg.height));
+  }
+
+  // (deprecated) factory method to get decoder from shared pool
   Decoder<EventPacket, EventProcT> * getInstance(
     const std::string & codec, uint16_t width, uint16_t height)
   {
