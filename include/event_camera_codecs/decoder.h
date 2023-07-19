@@ -47,13 +47,15 @@ public:
   bool decodeUntil(
     const MsgT & msg, EventProcT * processor, uint64_t timeLimit, uint64_t * nextTime)
   {
-    setTimeBase(msg.time_base);
+    if (bytesUsed_ == 0) {
+      setTimeBase(msg.time_base);
+    }
     size_t bytesConsumed = decodeUntil(
       msg.events.data() + bytesUsed_, msg.events.size() - bytesUsed_, processor, timeLimit,
       nextTime);
     bytesUsed_ += bytesConsumed;
     const bool reachedTimeLimit = (bytesUsed_ < msg.events.size());
-    if (reachedTimeLimit) {
+    if (!reachedTimeLimit) {
       bytesUsed_ = 0;  // reached end-of-message, reset pointer for next message
     }
     return (reachedTimeLimit);
