@@ -91,7 +91,7 @@ void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
   auto decoder = decoderFactory.getInstance(*msg);
   uint64_t nextTime{0};
   // The loop will exit when all events in msg have been processed
-  while (decoder->decodeUntil(*msg, &cam_, currentFrameTime, &nextTime)) {
+  while (decoder->decodeUntil(*msg, &processor, currentFrameTime, &nextTime)) {
     // use loop in case multiple frames fit inbetween two events
     while (!frameTimes.empty() && currentFrameTime <= nextTime) {
       // processFrameHere()
