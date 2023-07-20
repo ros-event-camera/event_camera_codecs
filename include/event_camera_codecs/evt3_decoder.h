@@ -55,6 +55,7 @@ public:
     };
     size_t numConsumed{0};
     doDecode<TimeLimit>(buf, bufSize, processor, timeLimit, &numConsumed, nextTime);
+
     return (numConsumed);
   }
 
@@ -150,7 +151,8 @@ public:
         default:
           // ------- all the vector codes are not generated
           // by the Gen3 sensor I have....
-          std::cout << "got unsupported code: " << static_cast<int>(buffer[i].code) << std::endl;
+          std::cout << "evt3 event camera decoder got unsupported code: "
+                    << static_cast<int>(buffer[i].code) << std::endl;
           throw std::runtime_error("got unsupported code!");
           break;
       }
@@ -216,7 +218,8 @@ public:
         default:
           // ------- all the vector codes are not generated
           // by the Gen3 sensor I have....
-          std::cout << "got unsupported code: " << static_cast<int>(buffer[i].code) << std::endl;
+          std::cout << "evt3 event camera decoder got unsupported code: "
+                    << static_cast<int>(buffer[i].code) << std::endl;
           throw std::runtime_error("got unsupported code!");
           break;
       }

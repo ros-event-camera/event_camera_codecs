@@ -82,20 +82,20 @@ void eventMsg(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
 
 /* To synchronize with frame based sensors it is useful to play back
    until a frame boundary is reached. The interface decodeUntil() is provided
-   for this purpose. Sample code below.
+   for this purpose. In the sample code below.
    frameTimes is an ordered queue of frame times.
-   currentFrameTime must be initialized frameTimes.front(), and then
-   removed from frameTimes. */
+   */
 
 void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
   auto decoder = decoderFactory.getInstance(*msg);
   uint64_t nextTime{0};
   // The loop will exit when all events in msg have been processed
-  while (decoder->decodeUntil(*msg, &processor, currentFrameTime, &nextTime)) {
+  // or there are no more frame times available
+  while (!frameTimes.empty() &&
+    decoder->decodeUntil(*msg, &processor, frameTimes.front(), &nextTime)) {
     // use loop in case multiple frames fit inbetween two events
-    while (!frameTimes.empty() && currentFrameTime <= nextTime) {
+    while (!frameTimes.empty() && frameTimes.front() <= nextTime) {
       // processFrameHere()
-      currentFrameTime = frameTimes.front();
       frameTimes.pop();
     }
   }
