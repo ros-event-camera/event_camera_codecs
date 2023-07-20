@@ -109,13 +109,13 @@ void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
 ROS1:
 ```
 # decode a raw file and measure performance
-rosrun event_camera_codecs perf -i foo.raw
+rosrun event_camera_codecs codec_perf -i foo.raw
 ```
 
 ROS2 examples:
 ```
 # decode a raw file and measure performance
-ros2 run event_camera_codecs perf -i foo.raw
+ros2 run event_camera_codecs codec_perf -i foo.raw
 ```
 
 ## License

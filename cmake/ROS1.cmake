@@ -38,8 +38,8 @@ target_link_libraries(codec ${catkin_LIBRARIES})
 #
 # ---- performance test tool
 #
-add_executable(perf src/perf.cpp)
-target_link_libraries(perf codec ${catkin_LIBRARIES})
+add_executable(codec_perf src/perf.cpp)
+target_link_libraries(codec_perf codec ${catkin_LIBRARIES})
 
 
 #############
@@ -48,7 +48,7 @@ target_link_libraries(perf codec ${catkin_LIBRARIES})
 
 install(TARGETS
   codec
-  perf
+  codec_perf
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(TARGETS codec

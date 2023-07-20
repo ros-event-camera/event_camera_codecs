@@ -47,8 +47,8 @@ ament_export_dependencies(${ROS2_DEPENDENCIES})
 #
 # ---- performance test tool
 #
-add_executable(perf src/perf.cpp)
-target_link_libraries(perf codec)
+add_executable(codec_perf src/perf.cpp)
+target_link_libraries(codec_perf codec)
 
 #
 # ---- metavision test code
@@ -73,7 +73,7 @@ install(
 # the launch file will not find it
 
 install(TARGETS
-  perf
+  codec_perf
 #  metavision_test
   DESTINATION lib/${PROJECT_NAME}/)
 
