@@ -41,6 +41,8 @@ cd ~/ws
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # (optionally add -DCMAKE_EXPORT_COMPILE_COMMANDS=1)
 ```
 
+To also build the unit tests, add the cmake argument ``-DEVENT_CAMERA_CODECS_BUILD_TESTS=ON``.
+
 ## API example
 
 ```cpp

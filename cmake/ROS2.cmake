@@ -98,6 +98,21 @@ if(BUILD_TESTING)
   ament_xmllint()
 endif()
 
+if(EVENT_CAMERA_CODECS_BUILD_TESTS)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(rosbag2_cpp REQUIRED)
+
+  ament_add_gtest(${PROJECT_NAME}_decoder_test test/decoder_test.cpp
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+  message(WARNING "building tests with wd: ${PROJECT_SOURCE_DIR}/test")
+  target_include_directories(${PROJECT_NAME}_decoder_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+  ament_target_dependencies(${PROJECT_NAME}_decoder_test rclcpp rosbag2_cpp)
+  target_link_libraries(${PROJECT_NAME}_decoder_test codec)
+endif()
+
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(${ROS2_DEPENDENCIES})
 ament_export_dependencies(class_loader)
