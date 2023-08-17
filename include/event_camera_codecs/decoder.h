@@ -47,14 +47,25 @@ public:
   bool decodeUntil(
     const MsgT & msg, EventProcT * processor, uint64_t timeLimit, uint64_t * nextTime)
   {
+    return (decodeUntil(
+      msg.events.data(), msg.events.size(), processor, timeLimit, msg.time_base, nextTime));
+  }
+
+  // Helper function to be used when MsgT cannot be easily constructed, such
+  // as when decoding python messages. This function keeps track of progress in
+  // decoding the message.
+  //
+  bool decodeUntil(
+    const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
+    uint64_t timeBase, uint64_t * nextTime)
+  {
     if (bytesUsed_ == 0) {
-      setTimeBase(msg.time_base);
+      setTimeBase(timeBase);
     }
-    size_t bytesConsumed = decodeUntil(
-      msg.events.data() + bytesUsed_, msg.events.size() - bytesUsed_, processor, timeLimit,
-      nextTime);
+    size_t bytesConsumed =
+      decodeUntil(buf + bytesUsed_, bufSize - bytesUsed_, processor, timeLimit, nextTime);
     bytesUsed_ += bytesConsumed;
-    const bool reachedTimeLimit = (bytesUsed_ < msg.events.size());
+    const bool reachedTimeLimit = (bytesUsed_ < bufSize);
     if (!reachedTimeLimit) {
       bytesUsed_ = 0;  // reached end-of-message, reset pointer for next message
     }
@@ -70,7 +81,8 @@ public:
   // ---- interface methods
   // (deprecated version of typed message)
   virtual void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
-  // (deprecated version of typed message), returns bytes consumed
+  // (deprecated version of typed message), returns bytes consumed, does not keep state
+  // about progress in decoding the message.
   virtual size_t decodeUntil(
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
     uint64_t * nextTime) = 0;
