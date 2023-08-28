@@ -25,25 +25,50 @@
 
 namespace event_camera_codecs
 {
+/*!
+\brief Base class of decoders for different encodings.
+
+ The Decoder class is templated by message type so it can leverage all fields
+ of a message. It is also templated by the event processor which permits
+ for efficient inlining of the processing code, i.e. a decoded event
+ can be processed immediately without incurring the cost of storing
+ the event in memory.
+
+ \tparam MsgT ROS message type to decode, e.g. EventPacket
+ \tparam EventProcT EventProcessor class that gets called once an event is decoded.
+*/
 template <class MsgT, class EventProcT = NoOpEventProcessor>
 class Decoder
 {
 public:
-  virtual ~Decoder() {}
+  virtual ~Decoder() = default;
 
-  // Decodes entire message, produces callbacks to processor
+  /*!
+  \brief Decodes entire message, produces callbacks to \p processor.
+
+  Use this method to feed the decoder with messages in case you
+  want the entire message decoded.
+  \param msg message to decode
+  \param processor event processor to call when events are decoded
+  */
   void decode(const MsgT & msg, EventProcT * processor)
   {
     setTimeBase(msg.time_base);
     decode(msg.events.data(), msg.events.size(), processor);
   }
 
-  // Decodes messages up to, but not including, timeLimit. Will return true if
-  // the time limit has been reached, false otherwise. If the time limit has been
-  // reached, decode() must be called again with the same message pointer
-  // to process the remaining events in the message.
-  // Only if the time limit has been reached (!), nextTime will be set to the time
-  // following the last decoded event.
+  /*!
+  \brief  Decodes a message up to, but not including, \p timeLimit .
+
+  If the time limit has been reached (implying not the entire message has been processed),
+  decodeUntil() must be called again with the same \p msg argument,
+  to process the remaining events in the message.
+  \param msg message to be decoded
+  \param processor event processor to call when events are decoded
+  \param timeLimit sensor time limit up to (but not including) which decoding should happen
+  \param nextTime time following the last decoded event. NOT VALID WHEN RETURN VALUE IS FALSE!
+  \return true if time limit has been reached, i.e. end of \p msg has not yet been reached.
+  */
   bool decodeUntil(
     const MsgT & msg, EventProcT * processor, uint64_t timeLimit, uint64_t * nextTime)
   {
@@ -51,10 +76,16 @@ public:
       msg.events.data(), msg.events.size(), processor, timeLimit, msg.time_base, nextTime));
   }
 
-  // Helper function to be used when MsgT cannot be easily constructed, such
-  // as when decoding python messages. This function keeps track of progress in
-  // decoding the message.
-  //
+  /*!
+  \brief Provides same functionality as decodeUntil(msg, ...), but without using a message type.
+  This is helpful when using languages like Python.
+  \param buf pointer to first byte of message. Do not advance the pointer!
+  \param bufSize number of bytes in event packet. Set to size of message event buffer.
+  \param processor event processor to call when events are decoded
+  \param timeLimit sensor time limit up to (but not including) which decoding should happen
+  \param nextTime time following the last decoded event. NOT VALID WHEN RETURN VALUE IS FALSE!
+  \return true if time limit has been reached, i.e. end of \p msg has not yet been reached.
+  */
   bool decodeUntil(
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
     uint64_t timeBase, uint64_t * nextTime)
@@ -72,31 +103,79 @@ public:
     return (reachedTimeLimit);
   }
 
-  // Summarizes message statistics
+  /*!
+  \brief Summarizes message statistics. Use this function to peek into
+  message without getting processing callbacks.
+  \param msg message to summarize.
+  \param firstTS first timestamp (will not be set if \p msg does not contain timestamp)
+  \param lastTS last timestamp (will not be set if \p msg does not contain timestamp)
+  \param numEvents number of events in messagelast timestamp (will not be set if \p msg does not contain timestamp)
+  \return true if timestamp has been found (i.e. firstTS and lastTS are valid)
+  */
+
   bool summarize(const MsgT & msg, uint64_t * firstTS, uint64_t * lastTS, size_t * numEventsOnOff)
   {
     return (summarize(msg.events.data(), msg.events.size(), firstTS, lastTS, numEventsOnOff));
   }
 
   // ---- interface methods
-  // (deprecated version of typed message)
+  /*!
+  \brief decode buffer without using message type. Use this method if the message is
+  not available, e.g. when calling from python. 
+  */
   virtual void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
-  // (deprecated version of typed message), returns bytes consumed, does not keep state
-  // about progress in decoding the message.
+  /*!
+  \brief decode buffer until reaching time limit, without using message type. Use
+  this method if the message is not available, e.g. when calling from python.
+  */
   virtual size_t decodeUntil(
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
     uint64_t * nextTime) = 0;
+  /*!
+  See summarize()
+  */
   virtual bool summarize(
     const uint8_t * buf, size_t size, uint64_t * firstTS, uint64_t * lastTS,
     size_t * numEventsOnOff) = 0;
+  /*!
+  \brief Sets time base, i.e the reference time to which the event times refer to. For
+  some codecs (like evt3) this has no effect.
+  \param timeBase typically time in nanoseconds since epoch.
+  */
   virtual void setTimeBase(const uint64_t timeBase) = 0;
+  /*!
+  \brief Finds first sensor time in event packet. This can be much faster than
+    decoding the entire packet.
+  \param buf buffer with event data
+  \param size size of buffer with event data (bytes)
+  \param firstTS first time stamp (only valid if "true" is returned!)
+  \return true if sensor time has been found
+  */
   virtual bool findFirstSensorTime(const uint8_t * buf, size_t size, uint64_t * firstTS) = 0;
+  /*!
+  \brief Finds first sensor time in event packet. This can be much faster than
+  decoding the entire packet.
+  \param msg event packet message
+  \param firstTS first time stamp (only valid if "true" is returned!)
+  \return true if sensor time has been found
+  */
   virtual bool findFirstSensorTime(const MsgT & msg, uint64_t * firstTS) = 0;
+  /*!
+  \brief Sets the time multiplier
+  \param mult Time multiplier. If the sensor time is natively in usec and \p mult is set to 1000,
+   then the decoded time will be in nanoseconds.
+  */
   virtual void setTimeMultiplier(uint32_t mult) = 0;
+  /*!
+  \brief Sets sensor geometry. Must be called before first call to "decode". Necessary for sanity
+  checks.
+  \param  with sensor width in pixels
+  \param height sensor height in pixels
+  */
   virtual void setGeometry(uint16_t width, uint16_t height) = 0;
 
   // ----------- variables
-  size_t bytesUsed_{0};
+  size_t bytesUsed_{0};  //! used to keep track of how far a message has already been decoded
 };
 
 }  // namespace event_camera_codecs
