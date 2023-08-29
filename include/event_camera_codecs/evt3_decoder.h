@@ -329,7 +329,6 @@ private:
   bool hasValidTime_{false};    // false until time is valid
   uint16_t width_{0};           // sensor geometry
   uint16_t height_{0};          // sensor geometry
-  size_t bytesUsed_{0};         // how many bytes of the current message have been used
 };
 }  // namespace evt3
 }  // namespace event_camera_codecs

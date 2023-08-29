@@ -26,16 +26,18 @@
 namespace event_camera_codecs
 {
 /*!
+\warning This API is unstable and may change in the near future.
+
 \brief Base class of decoders for different encodings.
 
- The Decoder class is templated by message type so it can leverage all fields
- of a message. It is also templated by the event processor which permits
- for efficient inlining of the processing code, i.e. a decoded event
- can be processed immediately without incurring the cost of storing
- the event in memory.
+The Decoder class is templated by message type so it can leverage all fields
+of a message. It is also templated by the event processor which permits
+for efficient inlining of the processing code, i.e. a decoded event
+can be processed immediately without incurring the cost of storing
+the event in memory.
 
- \tparam MsgT ROS message type to decode, e.g. EventPacket
- \tparam EventProcT EventProcessor class that gets called once an event is decoded.
+\tparam MsgT ROS message type to decode, e.g. EventPacket
+\tparam EventProcT EventProcessor class that gets called once an event is decoded.
 */
 template <class MsgT, class EventProcT = NoOpEventProcessor>
 class Decoder
@@ -45,7 +47,6 @@ public:
 
   /*!
   \brief Decodes entire message, produces callbacks to \p processor.
-
   Use this method to feed the decoder with messages in case you
   want the entire message decoded.
   \param msg message to decode
@@ -83,6 +84,7 @@ public:
   \param bufSize number of bytes in event packet. Set to size of message event buffer.
   \param processor event processor to call when events are decoded
   \param timeLimit sensor time limit up to (but not including) which decoding should happen
+  \param timeBase time bases for events in packet (may not be used)
   \param nextTime time following the last decoded event. NOT VALID WHEN RETURN VALUE IS FALSE!
   \return true if time limit has been reached, i.e. end of \p msg has not yet been reached.
   */
@@ -109,7 +111,7 @@ public:
   \param msg message to summarize.
   \param firstTS first timestamp (will not be set if \p msg does not contain timestamp)
   \param lastTS last timestamp (will not be set if \p msg does not contain timestamp)
-  \param numEvents number of events in messagelast timestamp (will not be set if \p msg does not contain timestamp)
+  \param numEventsOnOff number of events in message (must be pointer to array of size 2)
   \return true if timestamp has been found (i.e. firstTS and lastTS are valid)
   */
 
@@ -169,11 +171,12 @@ public:
   /*!
   \brief Sets sensor geometry. Must be called before first call to "decode". Necessary for sanity
   checks.
-  \param  with sensor width in pixels
+  \param width sensor width in pixels
   \param height sensor height in pixels
   */
   virtual void setGeometry(uint16_t width, uint16_t height) = 0;
 
+private:
   // ----------- variables
   size_t bytesUsed_{0};  //! used to keep track of how far a message has already been decoded
 };
