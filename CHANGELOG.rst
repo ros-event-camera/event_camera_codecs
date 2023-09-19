@@ -2,8 +2,8 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2023-09-19)
+------------------
 * add dependency on class_loader
 * Contributors: Bernd Pfrommer
 
