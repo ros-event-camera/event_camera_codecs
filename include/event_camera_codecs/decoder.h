@@ -168,6 +168,7 @@ public:
    then the decoded time will be in nanoseconds.
   */
   virtual void setTimeMultiplier(uint32_t mult) = 0;
+
   /*!
   \brief Sets sensor geometry. Must be called before first call to "decode". Necessary for sanity
   checks.
@@ -175,6 +176,20 @@ public:
   \param height sensor height in pixels
   */
   virtual void setGeometry(uint16_t width, uint16_t height) = 0;
+  /*!
+  \brief Gets sensor width.
+  \return width of sensor
+  */
+  virtual uint16_t getWidth() const = 0;
+  /*!
+  \brief Gets sensor height.
+  \return height of sensor
+  */
+  virtual uint16_t getHeight() const = 0;
+
+protected:
+  uint16_t width_{0};   // sensor geometry
+  uint16_t height_{0};  // sensor geometry
 
 private:
   // ----------- variables
