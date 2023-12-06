@@ -268,6 +268,8 @@ public:
     width_ = width;
     height_ = height;
   }
+  uint16_t getWidth() const override { return (width_); }
+  uint16_t getHeight() const override { return (height_); }
 
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low) { return ((high | low) * timeMult_); }

@@ -83,9 +83,10 @@ public:
   Decoder<EventPacket, EventProcT> * getInstance(
     const std::string & codec, uint16_t width, uint16_t height)
   {
-    auto it = decoderMap_.find(codec);
+    const DecoderKey key(DecoderKey(codec, width, height));
+    auto it = decoderMap_.find(key);
     if (it == decoderMap_.end()) {
-      auto elem = decoderMap_.insert({codec, newInstance(codec)});
+      auto elem = decoderMap_.insert({key, newInstance(codec)});
       elem.first->second->setGeometry(width, height);
       return (elem.first->second.get());
     }
@@ -93,8 +94,33 @@ public:
   }
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Decoder<EventPacket, EventProcT>>> decoderMap_;
-};
+  class DecoderKey
+  {
+  public:
+    DecoderKey(const std::string & enc, uint16_t w, uint16_t h) : enc_(enc), w_(w), h_(h) {}
+    bool operator==(const DecoderKey & k) const
+    {
+      return (enc_ == k.enc_ && w_ == k.w_ && h_ == k.h_);
+    }
+    const std::string & getEncoding() const { return (enc_); }
+    uint16_t getWidth() const { return (w_); }
+    uint16_t getHeight() const { return (h_); }
+
+  private:
+    std::string enc_;
+    uint16_t w_{0};
+    uint16_t h_{0};
+  };
+  struct hash_fn
+  {
+    size_t operator()(const DecoderKey & k) const
+    {
+      return (std::hash<std::string>()(k.getEncoding()) + k.getWidth() + k.getHeight());
+    }
+  };
+  std::unordered_map<DecoderKey, std::shared_ptr<Decoder<EventPacket, EventProcT>>, hash_fn>
+    decoderMap_;
+};  // namespace event_camera_codecs
 
 }  // namespace event_camera_codecs
 #endif  // EVENT_CAMERA_CODECS__DECODER_FACTORY_H_

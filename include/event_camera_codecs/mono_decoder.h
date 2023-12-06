@@ -109,6 +109,8 @@ public:
   void setGeometry(uint16_t, uint16_t) override
   { /* ignored */
   }
+  uint16_t getWidth() const override { return (0); }
+  uint16_t getHeight() const override { return (0); }
 
 private:
   // --------------------- variables
