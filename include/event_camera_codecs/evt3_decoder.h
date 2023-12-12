@@ -49,13 +49,16 @@ public:
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
     uint64_t * nextTime) override
   {
+    if (hasValidTime_ && makeTime(timeHigh_, timeLow_) >= timeLimit) {
+      *nextTime = makeTime(timeHigh_, timeLow_);
+      return (0);
+    }
     struct TimeLimit
     {
       static bool isInFuture(uint64_t t, uint64_t limit) { return (t >= limit); }
     };
     size_t numConsumed{0};
     doDecode<TimeLimit>(buf, bufSize, processor, timeLimit, &numConsumed, nextTime);
-
     return (numConsumed);
   }
 

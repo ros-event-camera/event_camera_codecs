@@ -19,6 +19,7 @@
 #include <event_camera_codecs/decoder.h>
 #include <event_camera_codecs/event_packet.h>
 #include <event_camera_codecs/evt3_decoder.h>
+#include <event_camera_codecs/libcaer_decoder.h>
 #include <event_camera_codecs/mono_decoder.h>
 #include <event_camera_codecs/noop_event_processor.h>
 #include <event_camera_codecs/ros1_ros2_compat.h>
@@ -68,6 +69,8 @@ public:
       return (std::make_shared<mono::Decoder<EventPacket, EventProcT>>());
     } else if (codec == "trigger") {
       return (std::make_shared<trigger::Decoder<EventPacket, EventProcT>>());
+    } else if (codec == "libcaer") {
+      return (std::make_shared<libcaer::Decoder<EventPacket, EventProcT>>());
     }
     // return null pointer if codec not found
     return (nullptr);
@@ -86,9 +89,14 @@ public:
     const DecoderKey key(DecoderKey(codec, width, height));
     auto it = decoderMap_.find(key);
     if (it == decoderMap_.end()) {
-      auto elem = decoderMap_.insert({key, newInstance(codec)});
-      elem.first->second->setGeometry(width, height);
-      return (elem.first->second.get());
+      auto c = newInstance(codec);
+      if (c != 0) {
+        auto elem = decoderMap_.insert({key, newInstance(codec)});
+        elem.first->second->setGeometry(width, height);
+        return (elem.first->second.get());
+      } else {
+        return (nullptr);
+      }
     }
     return (it->second.get());
   }
