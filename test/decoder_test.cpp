@@ -32,6 +32,8 @@ public:
     checkSumCD_x_ += ex;
     checkSumCD_y_ += ey;
     checkSumCD_p_ += polarity;
+    ASSERT_LT(ex, width_);
+    ASSERT_LT(ey, height_);
     if (debug_ && t < lastTime_) {
       std::cout << "t going backwards: last time: " << lastTime_ << ", t: " << t << std::endl;
     }
@@ -52,6 +54,11 @@ public:
   void setDebug(bool b) { debug_ = b; }
   bool getDebug() const { return (debug_); }
   void incNumMessages() { numMessages_++; }
+  void setGeometry(uint16_t w, uint16_t h)
+  {
+    width_ = w;
+    height_ = h;
+  }
   void incNumDecodedCompletely(bool b) { numDecodedCompletely_ += b; }
   size_t getNumMessages() const { return (numMessages_); }
   void verifyCheckSumCD(uint64_t t, uint64_t x, uint64_t y, uint64_t p)
@@ -95,9 +102,38 @@ private:
   uint64_t checkSumTrigger_edge_{0};
   uint64_t checkSumTrigger_id_{0};
   uint64_t lastTime_{0};
+  uint16_t width_{0};
+  uint16_t height_{0};
   size_t numDecodedCompletely_{0};
   size_t numMessages_{0};
   bool debug_{false};
+};
+
+class SummaryTester
+{
+public:
+  void setFirstTS(uint64_t t) { firstTS_ = t; }
+  void setLastTS(uint64_t t) { lastTS_ = t; }
+  void setNumOff(size_t n) { numEventsOnOff_[0] = n; }
+  void setNumOn(size_t n) { numEventsOnOff_[1] = n; }
+  void test(uint64_t firstTS, uint64_t lastTS, size_t numOff, size_t numOn)
+  {
+    ASSERT_GE(lastTS_, firstTS_);
+    ASSERT_EQ(firstTS_, firstTS);
+    ASSERT_EQ(lastTS_, lastTS);
+    ASSERT_EQ(numEventsOnOff_[0], numOff);
+    ASSERT_EQ(numEventsOnOff_[1], numOn);
+  }
+  void print() const
+  {
+    std::cout << firstTS_ << ", " << lastTS_ << ", " << numEventsOnOff_[0] << ", "
+              << numEventsOnOff_[1] << std::endl;
+  }
+
+private:
+  uint64_t firstTS_{0};
+  uint64_t lastTS_{0};
+  size_t numEventsOnOff_[2]{0, 0};
 };
 
 uint64_t test_decode_until(uint64_t untilTime, CheckSumProcessor * proc, const std::string & bag)
@@ -117,6 +153,7 @@ uint64_t test_decode_until(uint64_t untilTime, CheckSumProcessor * proc, const s
     // We get around that by calling setTimeBase(). It's a hack really since the
     // state of the decoder gets messed up.
     decoder->setTimeBase(msgPtr->time_base);
+    proc->setGeometry(msgPtr->width, msgPtr->height);
     const bool dc = !decoder->decodeUntil(*msgPtr, proc, untilTime, &nextTime);
     proc->incNumDecodedCompletely(dc);
     proc->incNumMessages();
@@ -128,20 +165,58 @@ uint64_t test_decode_until(uint64_t untilTime, CheckSumProcessor * proc, const s
   return (nextTime);
 }
 
+void test_decode(CheckSumProcessor * proc, const std::string & bag)
+{
+  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
+  EventBagReader ebr(bag);
+  while (const auto msgPtr = ebr.next()) {
+    proc->setGeometry(msgPtr->width, msgPtr->height);
+    auto decoder = decoderFactory.getInstance(*msgPtr);
+    EXPECT_TRUE(decoder != nullptr);
+    decoder->decode(*msgPtr, proc);
+  }
+}
+
+void test_summarize(SummaryTester * st, const std::string & bag)
+{
+  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
+  EventBagReader ebr(bag);
+  const auto msgPtr = ebr.next();
+  EXPECT_TRUE(msgPtr != nullptr);
+  auto decoder = decoderFactory.getInstance(*msgPtr);
+  EXPECT_TRUE(decoder != nullptr);
+  uint64_t firstTS{0};
+  uint64_t lastTS{0};
+  size_t numOnOff[2]{0, 0};
+  decoder->summarize(*msgPtr, &firstTS, &lastTS, numOnOff);
+  st->setFirstTS(firstTS);
+  st->setLastTS(lastTS);
+  st->setNumOff(numOnOff[0]);
+  st->setNumOn(numOnOff[1]);
+}
+
+uint64_t test_find_first(const std::string & bag)
+{
+  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
+  EventBagReader ebr(bag);
+  auto msgPtr = ebr.next();
+  EXPECT_TRUE(msgPtr != nullptr);
+  msgPtr = ebr.next();  // skip first packet
+  EXPECT_TRUE(msgPtr != nullptr);
+  auto decoder = decoderFactory.getInstance(*msgPtr);
+  EXPECT_TRUE(decoder != nullptr);
+  uint64_t firstTS{0};
+  decoder->findFirstSensorTime(*msgPtr, &firstTS);
+  return (firstTS);
+}
+
 //
 //  EVT3 tests(including trigger events)
 //
 TEST(event_camera_codecs, evt3_decode)
 {
   CheckSumProcessor proc;
-
-  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
-  EventBagReader ebr("test_data_evt3_trigger");
-  while (const auto msgPtr = ebr.next()) {
-    auto decoder = decoderFactory.getInstance(*msgPtr);
-    EXPECT_TRUE(decoder != nullptr);
-    decoder->decode(*msgPtr, &proc);
-  }
+  test_decode(&proc, "test_data_evt3_trigger");
   proc.verifyCheckSumCD(1222326831810000ULL, 42078718ULL, 31656267ULL, 41439ULL);
   proc.verifyCheckSumTrigger(29096982000ULL, 1ULL, 0ULL);
 }
@@ -185,14 +260,7 @@ TEST(event_camera_codecs, evt3_decode_until_last)
 TEST(event_camera_codecs, mono_cd_decode)
 {
   CheckSumProcessor proc;
-
-  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
-  EventBagReader ebr("test_data_mono_cd");
-  while (const auto msgPtr = ebr.next()) {
-    auto decoder = decoderFactory.getInstance(*msgPtr);
-    EXPECT_TRUE(decoder != nullptr);
-    decoder->decode(*msgPtr, &proc);
-  }
+  test_decode(&proc, "test_data_mono_cd");
   proc.verifyCheckSumCD(4950000ULL, 34450ULL, 26450ULL, 50ULL);
 }
 
@@ -235,13 +303,7 @@ TEST(event_camera_codecs, mono_cd_decode_until_last)
 TEST(event_camera_codecs, libcaer_decode)
 {
   CheckSumProcessor proc;
-  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
-  EventBagReader ebr("test_data_libcaer_rollover");
-  while (const auto msgPtr = ebr.next()) {
-    auto decoder = decoderFactory.getInstance(*msgPtr);
-    EXPECT_TRUE(decoder != nullptr);
-    decoder->decode(*msgPtr, &proc);
-  }
+  test_decode(&proc, "test_data_libcaer_rollover");
   proc.verifyCheckSumCD(15762826572202229126ULL, 111651612ULL, 82801007ULL, 181908ULL);
 }
 
@@ -291,33 +353,74 @@ TEST(event_camera_codecs, libcaer_decode_until_last)
 
 TEST(event_camera_codecs, libcaer_summarize)
 {
-  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
-  EventBagReader ebr("test_data_libcaer_rollover");
-  const auto msgPtr = ebr.next();
-  EXPECT_TRUE(msgPtr != nullptr);
-  auto decoder = decoderFactory.getInstance(*msgPtr);
-  EXPECT_TRUE(decoder != nullptr);
-  uint64_t firstTS{0};
-  uint64_t lastTS{0};
-  size_t numEventsOnOff[2]{0, 0};
-  decoder->summarize(*msgPtr, &firstTS, &lastTS, numEventsOnOff);
-  ASSERT_EQ(firstTS, 1702309120762236018ULL);
-  ASSERT_EQ(lastTS, 1702309120772213018ULL);
-  ASSERT_EQ(numEventsOnOff[0], 741ULL);
-  ASSERT_EQ(numEventsOnOff[1], 872ULL);
+  SummaryTester st;
+  test_summarize(&st, "test_data_libcaer_rollover");
+  st.test(1702309120762236018ULL, 1702309120772213018ULL, 741ULL, 872ULL);
 }
 
 TEST(event_camera_codecs, libcaer_find_first)
 {
-  event_camera_codecs::DecoderFactory<EventPacket, CheckSumProcessor> decoderFactory;
-  EventBagReader ebr("test_data_libcaer_rollover");
-  const auto msgPtr = ebr.next();
-  EXPECT_TRUE(msgPtr != nullptr);
-  auto decoder = decoderFactory.getInstance(*msgPtr);
-  EXPECT_TRUE(decoder != nullptr);
-  uint64_t firstTS{0};
-  decoder->findFirstSensorTime(*msgPtr, &firstTS);
-  ASSERT_EQ(firstTS, 1702309120762236018ULL);
+  ASSERT_EQ(1702309120772229018ULL, test_find_first("test_data_libcaer_rollover"));
+}
+
+//
+// ------------------- libcaer_cmp tests
+//
+TEST(event_camera_codecs, libcaer_cmp_decode)
+{
+  CheckSumProcessor proc;
+  test_decode(&proc, "test_data_libcaer_cmp");
+  proc.verifyCheckSumCD(14023744309793358664ULL, 269115819ULL, 200213171ULL, 491741ULL);
+}
+
+TEST(event_camera_codecs, libcaer_cmp_summarize)
+{
+  SummaryTester st;
+  test_summarize(&st, "test_data_libcaer_cmp");
+  st.test(1702669729854452000ULL, 1702669729864451000ULL, 1690ULL, 2627ULL);
+}
+
+TEST(event_camera_codecs, libcaer_cmp_find_first)
+{
+  ASSERT_EQ(1702669729864452000ULL, test_find_first("test_data_libcaer_cmp"));
+}
+
+TEST(event_camera_codecs, libcaer_cmp_decode_until_first)
+{
+  CheckSumProcessor proc;
+  uint64_t untilTime{1702669729864452000ULL};  // first event of second packet
+  (void)test_decode_until(untilTime, &proc, "test_data_libcaer_cmp");
+  proc.printCheckSums();
+  proc.verifyCheckSumCD(8621082466655168832ULL, 1397945ULL, 1059167ULL, 2627ULL);
+  proc.verifyLastTime(1702669729864451000);
+  proc.verifyNumDecodedCompletely(1ULL);
+  proc.verifyNumMessages(191ULL);
+}
+
+TEST(event_camera_codecs, libcaer_cmp_decode_until_middle)
+{
+  CheckSumProcessor proc;
+  uint64_t untilTime{1702669729874411000ULL};  // event middle of second packet
+  (void)test_decode_until(untilTime, &proc, "test_data_libcaer_cmp");
+  proc.printCheckSums();
+
+  proc.verifyCheckSumCD(7308769552432234048ULL, 2811188ULL, 2123354ULL, 5224ULL);
+  proc.verifyLastTime(1702669729874406000ULL);
+
+  proc.verifyNumDecodedCompletely(2ULL);
+  proc.verifyNumMessages(191ULL);
+}
+
+TEST(event_camera_codecs, libcaer_cmp_decode_until_last)
+{
+  CheckSumProcessor proc;
+  uint64_t untilTime{1702669729874450000ULL};  // last event of second packet
+  (void)test_decode_until(untilTime, &proc, "test_data_libcaer_cmp");
+  proc.printCheckSums();
+  proc.verifyCheckSumCD(2766006272627320816ULL, 2819158ULL, 2127214ULL, 5235ULL);
+  proc.verifyLastTime(1702669729874446000ULL);
+  proc.verifyNumDecodedCompletely(2ULL);
+  proc.verifyNumMessages(191ULL);
 }
 
 int main(int argc, char ** argv)
