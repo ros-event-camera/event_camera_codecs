@@ -29,7 +29,6 @@ namespace event_camera_codecs
 {
 namespace libcaer_cmp
 {
-
 template <class MsgT, class EventProcT>
 class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 {
