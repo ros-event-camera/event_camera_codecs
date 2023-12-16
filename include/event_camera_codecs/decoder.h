@@ -54,6 +54,7 @@ public:
   */
   void decode(const MsgT & msg, EventProcT * processor)
   {
+    processor->rawData(reinterpret_cast<const char *>(msg.events.data()), msg.events.size());
     setTimeBase(msg.time_base);
     decode(msg.events.data(), msg.events.size(), processor);
   }
@@ -63,7 +64,11 @@ public:
 
   If the time limit has been reached (implying not the entire message has been processed),
   decodeUntil() must be called again with the same \p msg argument,
-  to process the remaining events in the message.
+  to process the remaining events in the message. Do *not* use decode() and decodeUntil()
+  on the same decoder since the two methods advance the state of the decoder
+  differently. Also, you *must* call decodeUntil() until all bytes have been used up,
+  i.e until it returns false, even if you don't care about the remaining events of the
+  message.
   \param msg message to be decoded
   \param processor event processor to call when events are decoded
   \param timeLimit sensor time limit up to (but not including) which decoding should happen
@@ -93,7 +98,8 @@ public:
     uint64_t timeBase, uint64_t * nextTime)
   {
     if (bytesUsed_ == 0) {
-      setTimeBase(timeBase);
+      processor->rawData(reinterpret_cast<const char *>(buf), bufSize);
+      setTimeBase(timeBase);  // this should already be done before
     }
     size_t bytesConsumed =
       decodeUntil(buf + bytesUsed_, bufSize - bytesUsed_, processor, timeLimit, nextTime);
@@ -117,6 +123,7 @@ public:
 
   bool summarize(const MsgT & msg, uint64_t * firstTS, uint64_t * lastTS, size_t * numEventsOnOff)
   {
+    setTimeBase(msg.time_base);
     return (summarize(msg.events.data(), msg.events.size(), firstTS, lastTS, numEventsOnOff));
   }
 
@@ -168,6 +175,7 @@ public:
    then the decoded time will be in nanoseconds.
   */
   virtual void setTimeMultiplier(uint32_t mult) = 0;
+
   /*!
   \brief Sets sensor geometry. Must be called before first call to "decode". Necessary for sanity
   checks.
@@ -175,6 +183,20 @@ public:
   \param height sensor height in pixels
   */
   virtual void setGeometry(uint16_t width, uint16_t height) = 0;
+  /*!
+  \brief Gets sensor width.
+  \return width of sensor
+  */
+  virtual uint16_t getWidth() const = 0;
+  /*!
+  \brief Gets sensor height.
+  \return height of sensor
+  */
+  virtual uint16_t getHeight() const = 0;
+
+protected:
+  uint16_t width_{0};   // sensor geometry
+  uint16_t height_{0};  // sensor geometry
 
 private:
   // ----------- variables
