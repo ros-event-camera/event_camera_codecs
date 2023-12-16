@@ -2,8 +2,8 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2023-12-16)
+------------------
 * added more tests
 * added libcaer, libcaer_cmp and improved README
 * make decoder factory geometry aware, use new ros1 ci
