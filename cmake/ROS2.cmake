@@ -105,8 +105,7 @@ if(EVENT_CAMERA_CODECS_BUILD_TESTS)
 
   ament_add_gtest(${PROJECT_NAME}_decoder_test test/decoder_test.cpp
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
-  message(WARNING "building tests with wd: ${PROJECT_SOURCE_DIR}/test")
-  target_include_directories(${PROJECT_NAME}_decoder_test PUBLIC
+    target_include_directories(${PROJECT_NAME}_decoder_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
   ament_target_dependencies(${PROJECT_NAME}_decoder_test rclcpp rosbag2_cpp)

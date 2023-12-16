@@ -9,8 +9,9 @@ You can use this decoder from python via the
 
 ## Supported platforms
 
-Currently tested on Ubuntu 20.04 under ROS Noetic and ROS2 Galactic
-and under Ubuntu 22.04 / ROS2 Humble.
+Currently tested on:
+- ROS1: Ubuntu 20.04 on Noetic
+- ROS2: Ubuntu 22.04 on Humble, Iron, Rolling
 
 
 ## How to build
@@ -84,8 +85,8 @@ void eventMsg(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
 
 /* To synchronize with frame based sensors it is useful to play back
    until a frame boundary is reached. The interface decodeUntil() is provided
-   for this purpose. In the sample code below.
-   frameTimes is an ordered queue of frame times.
+   for this purpose. Do *NOT* use decode() and decodeUntil() on the same decoder!
+   In the sample code belowframeTimes is an ordered queue of frame times.
    */
 
 void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
@@ -93,6 +94,7 @@ void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
   uint64_t nextTime{0};
   // The loop will exit when all events in msg have been processed
   // or there are no more frame times available
+  decoder->setTimeBase(msg->time_base);
   while (!frameTimes.empty() &&
     decoder->decodeUntil(*msg, &processor, frameTimes.front(), &nextTime)) {
     // use loop in case multiple frames fit inbetween two events
@@ -104,9 +106,55 @@ void eventMsg2(const event_camera_codecs::EventPacketConstSharedPtr & msg) {
 }
 ```
 
+## Codecs
+
+The following encodings are supported:
+- ``evt3``: Native EVT3 format of the Prophesee (Metavision) line of cameras
+- ``libcaer_cmp``: Compressed libcaer format for Inivation Labs line of cameras.
+- ``libcaer``: Uncompressed format of libcaer data. Use only when memory bandwidth
+   is high and CPU is slow.
+- ``mono``: legacy format temporarily used for prophesee cameras. Deprecated.
+- ``trigger``: legacy format temporarily used for trigger events. Deprecated.
+
+## Event Time Stamps
+
+All event time stamps returned by the decoder refer to *sensor time*, i.e. the
+clock that is built into the device. The *sensor time* is given in nanoseconds
+although at the moment no device supports accuracy higher than microseconds.
+For certain devices (e.g. libcaer) *sensor time*
+is aligned with *host time* when the driver starts up. Since *sensor time* and *host time*
+are not synchronized they can drift arbitrarily far from each other.
+Some decoders (e.g. ``libcaer``, ``libcaer_cmp``) make use of the ``time_base``
+field, which refers to sensor time at the time of arrival of the first data packet
+included in the ROS message. For other encodings (e.g. ``evt3``) the sensor time must
+be recovered by decoding the messages.
+
+The time stamps encoded in EVT3 format have a few peculiarities worthwhile noting:
+
+- the data field for the time stamps is only 24 bits wide, which leads to wrap-around
+  of the time stamps every 2^24usec = 16.77s. This means that if you start decoding
+  somewhere in the middle of the data stream (an hour into it!), the first time stamp
+  you will get is always between 0 and 16.77s.
+  From then on the decoder library keeps track of the
+  moment when the 24 bit time stamp wraps around and so gives you the illusion that
+  the time stamp is 64bit wide. In reality it is not.
+- the device has some dubious bit errors in the time stamps that thwart a simplistic
+  detection of the time stamp wrap-around. The decoder has some logic built into it
+  to compensate for those errors but if your time stamps are suddenly off by 16.77s,
+  that may well have been the problem.
+- in theory comparison with the time stamps obtained from the Metavision SDK should be
+  possible but especially the starting time usually disagrees for unknown reasons. The
+  relative time differences however have always checked out so far.
+- because of the time-stamp wrap around, decoding two separate EVT3 event streams from
+  two different cameras can be tricky. If the time stamps for one camera have just wrapped
+  around before the first packet is decoded, but have not wrapped around for the second
+  camera, the sensor times will be off by 16.7s with respect to each other although the
+  two cameras are hardware synced.
+
+
 ## Tools
 
-### Performance measurement of decoder
+### Performance measurement of EVT3 decoder (for developers only)
 
 ROS1:
 ```
