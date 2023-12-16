@@ -19,6 +19,8 @@
 #include <event_camera_codecs/decoder.h>
 #include <event_camera_codecs/event_packet.h>
 #include <event_camera_codecs/evt3_decoder.h>
+#include <event_camera_codecs/libcaer_cmp_decoder.h>
+#include <event_camera_codecs/libcaer_decoder.h>
 #include <event_camera_codecs/mono_decoder.h>
 #include <event_camera_codecs/noop_event_processor.h>
 #include <event_camera_codecs/ros1_ros2_compat.h>
@@ -68,6 +70,10 @@ public:
       return (std::make_shared<mono::Decoder<EventPacket, EventProcT>>());
     } else if (codec == "trigger") {
       return (std::make_shared<trigger::Decoder<EventPacket, EventProcT>>());
+    } else if (codec == "libcaer") {
+      return (std::make_shared<libcaer::Decoder<EventPacket, EventProcT>>());
+    } else if (codec == "libcaer_cmp") {
+      return (std::make_shared<libcaer_cmp::Decoder<EventPacket, EventProcT>>());
     }
     // return null pointer if codec not found
     return (nullptr);
@@ -83,18 +89,49 @@ public:
   Decoder<EventPacket, EventProcT> * getInstance(
     const std::string & codec, uint16_t width, uint16_t height)
   {
-    auto it = decoderMap_.find(codec);
+    const DecoderKey key(DecoderKey(codec, width, height));
+    auto it = decoderMap_.find(key);
     if (it == decoderMap_.end()) {
-      auto elem = decoderMap_.insert({codec, newInstance(codec)});
-      elem.first->second->setGeometry(width, height);
-      return (elem.first->second.get());
+      auto c = newInstance(codec);
+      if (c != 0) {
+        auto elem = decoderMap_.insert({key, newInstance(codec)});
+        elem.first->second->setGeometry(width, height);
+        return (elem.first->second.get());
+      } else {
+        return (nullptr);
+      }
     }
     return (it->second.get());
   }
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Decoder<EventPacket, EventProcT>>> decoderMap_;
-};
+  class DecoderKey
+  {
+  public:
+    DecoderKey(const std::string & enc, uint16_t w, uint16_t h) : enc_(enc), w_(w), h_(h) {}
+    bool operator==(const DecoderKey & k) const
+    {
+      return (enc_ == k.enc_ && w_ == k.w_ && h_ == k.h_);
+    }
+    const std::string & getEncoding() const { return (enc_); }
+    uint16_t getWidth() const { return (w_); }
+    uint16_t getHeight() const { return (h_); }
+
+  private:
+    std::string enc_;
+    uint16_t w_{0};
+    uint16_t h_{0};
+  };
+  struct hash_fn
+  {
+    size_t operator()(const DecoderKey & k) const
+    {
+      return (std::hash<std::string>()(k.getEncoding()) + k.getWidth() + k.getHeight());
+    }
+  };
+  std::unordered_map<DecoderKey, std::shared_ptr<Decoder<EventPacket, EventProcT>>, hash_fn>
+    decoderMap_;
+};  // namespace event_camera_codecs
 
 }  // namespace event_camera_codecs
 #endif  // EVENT_CAMERA_CODECS__DECODER_FACTORY_H_

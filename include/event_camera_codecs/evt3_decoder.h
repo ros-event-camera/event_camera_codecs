@@ -49,13 +49,16 @@ public:
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
     uint64_t * nextTime) override
   {
+    if (hasValidTime_ && makeTime(timeHigh_, timeLow_) >= timeLimit) {
+      *nextTime = makeTime(timeHigh_, timeLow_);
+      return (0);
+    }
     struct TimeLimit
     {
       static bool isInFuture(uint64_t t, uint64_t limit) { return (t >= limit); }
     };
     size_t numConsumed{0};
     doDecode<TimeLimit>(buf, bufSize, processor, timeLimit, &numConsumed, nextTime);
-
     return (numConsumed);
   }
 
@@ -268,6 +271,8 @@ public:
     width_ = width;
     height_ = height;
   }
+  uint16_t getWidth() const override { return (width_); }
+  uint16_t getHeight() const override { return (height_); }
 
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low) { return ((high | low) * timeMult_); }
