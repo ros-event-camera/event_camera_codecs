@@ -62,6 +62,16 @@ template <class EventProcT>
 class DecoderFactory<EventPacket, EventProcT>
 {
 public:
+  // factory method to create new instance
+  std::shared_ptr<Decoder<EventPacket, EventProcT>> newInstance(const EventPacket & msg)
+  {
+    auto f = newInstance(msg.encoding);
+    f->setGeometry(msg.width, msg.height);
+    return (f);
+  }
+
+  // factory method to create new instance
+
   std::shared_ptr<Decoder<EventPacket, EventProcT>> newInstance(const std::string & codec)
   {
     if (codec == "evt3") {
