@@ -273,6 +273,8 @@ public:
   }
   uint16_t getWidth() const override { return (width_); }
   uint16_t getHeight() const override { return (height_); }
+  uint32_t getTimeMultiplier() const final { return (timeMult_); }
+  bool hasSensorTimeSinceEpoch() const final { return (false); }
 
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low) { return ((high | low) * timeMult_); }
