@@ -177,7 +177,10 @@ public:
     *lastTS = t2;
     return (true);
   }
-  void setTimeBase(uint64_t t) override { timeBase_ = t; }
+  void setTimeBase(uint64_t t) final
+  {
+    timeBase_ = (timeMult_ == 1000) ? t : (t * timeMult_) / 1000;
+  }
 
   bool findFirstSensorTime(const uint8_t *, size_t, uint64_t * firstTS) override
   {
@@ -199,11 +202,14 @@ public:
   }
   uint16_t getWidth() const override { return (width_); }
   uint16_t getHeight() const override { return (height_); }
+  uint32_t getTimeMultiplier() const final { return (timeMult_); }
+  bool hasSensorTimeSinceEpoch() const { return (true); }
 
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low)
   {
-    return (((high | low) * 1000 + timeBase_) * timeMult_);
+    const timestamp_t t = ((high | low) + timeBase_) * timeMult_;
+    return (t);
   }
 
   inline static timestamp_t update_high_time(uint16_t t, timestamp_t)
@@ -218,7 +224,7 @@ private:
   timestamp_t timeHigh_{0};     // time stamp high + rollover bits
   uint8_t currentPolarity_{0};  // polarity for vector event
   uint16_t currentBaseY_{0};    // Y coordinate basis for vector event
-  uint32_t timeMult_{1};        // default: time in nanoseconds
+  uint32_t timeMult_{1000};     // default: time in nanoseconds
   uint64_t timeBase_{0};        // first sensor time in packet
   uint16_t width_{0};           // sensor geometry
   uint16_t height_{0};          // sensor geometry

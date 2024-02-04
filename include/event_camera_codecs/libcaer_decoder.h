@@ -146,6 +146,8 @@ public:
   }
   uint16_t getWidth() const override { return (0); }
   uint16_t getHeight() const override { return (0); }
+  uint32_t getTimeMultiplier() const final { return (1); }
+  bool hasSensorTimeSinceEpoch() const final { return (true); }
 
 private:
   struct __attribute__((__packed__)) PolarityEvent
