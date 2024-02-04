@@ -193,6 +193,14 @@ public:
   \return height of sensor
   */
   virtual uint16_t getHeight() const = 0;
+  /*
+  \brief Gets the time multiplier used to convert sensor time to nanoseconds
+   */
+  virtual uint32_t getTimeMultiplier() const = 0;
+  /*
+  \brief Returns true if sensor time is time since start of epoch
+  */
+  virtual bool hasSensorTimeSinceEpoch() const = 0;
 
 protected:
   uint16_t width_{0};   // sensor geometry
