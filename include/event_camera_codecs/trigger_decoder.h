@@ -100,12 +100,8 @@ public:
     return findFirstSensorTime(msg.events.data(), msg.events.size(), firstTS);
   }
 
-  void setTimeMultiplier(uint32_t) override
-  { /* ignored */
-  }
-  void setGeometry(uint16_t, uint16_t) override
-  { /* ignored */
-  }
+  void setTimeMultiplier(uint32_t) override {}
+  void setGeometry(uint16_t, uint16_t) override {}
   uint16_t getWidth() const override { return (0); }
   uint16_t getHeight() const override { return (0); }
   uint32_t getTimeMultiplier() const final { return (1); }
