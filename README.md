@@ -15,18 +15,13 @@ Currently tested on:
 
 
 ## How to build
-Create a workspace, clone this repo, and use ``vcs``
-to pull in the remaining dependencies:
 
+Set the following shell variables:
+```bash
+repo=event_camera_codecs
+url=https://github.com/ros-event-camera/${repo}.git
 ```
-pkg=event_camera_codecs
-mkdir -p ~/$pkg/src
-cd ~/ws
-git clone https://github.com/ros-event-camera/${pkg}.git src/${pkg}
-cd src
-vcs import < ${pkg}/${pkg}.repos
-cd ..
-```
+and follow the [instructions here](https://github.com/ros-misc-utilities/.github/blob/master/docs/build_ros_repository.md)
 
 ### configure and build on ROS1:
 
