@@ -48,8 +48,10 @@ public:
     EXPECT_TRUE(t >= lastTime_);
     lastTime_ = t;
   }
+  // clang-format off
   void finished() override{};
   void rawData(const char *, size_t) override{};
+  // clang-format on
   // --- own methods
   void setDebug(bool b) { debug_ = b; }
   bool getDebug() const { return (debug_); }
