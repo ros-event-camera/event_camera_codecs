@@ -2,6 +2,12 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix formatting for noble
+* updated build instructions
+* Contributors: Bernd Pfrommer
+
 1.0.4 (2024-02-04)
 ------------------
 * added hasSensorTimeSinceEpoch() and getTimeMultiplier()
