@@ -2,6 +2,12 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* avoid ament_target_dependencies
+* bumped cmake required
+* Contributors: Bernd Pfrommer
+
 1.0.5 (2024-05-29)
 ------------------
 * fix formatting for noble
