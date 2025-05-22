@@ -40,7 +40,7 @@ target_include_directories(codec
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(codec ${ROS2_DEPENDENCIES})
+target_link_libraries(codec ${event_camera_msgs_TARGETS})
 ament_export_targets(codecTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${ROS2_DEPENDENCIES})
 
@@ -108,8 +108,7 @@ if(EVENT_CAMERA_CODECS_BUILD_TESTS)
     target_include_directories(${PROJECT_NAME}_decoder_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-  ament_target_dependencies(${PROJECT_NAME}_decoder_test rclcpp rosbag2_cpp)
-  target_link_libraries(${PROJECT_NAME}_decoder_test codec)
+  target_link_libraries(${PROJECT_NAME}_decoder_test codec rclcpp::rclcpp rosbag2_cpp::rosbag2_cpp)
 endif()
 
 ament_export_dependencies(ament_cmake)
