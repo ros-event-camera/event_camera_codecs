@@ -2,8 +2,8 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2025-05-22)
+------------------
 * avoid ament_target_dependencies
 * bumped cmake required
 * Contributors: Bernd Pfrommer
