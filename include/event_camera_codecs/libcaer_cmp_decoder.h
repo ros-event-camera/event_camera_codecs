@@ -208,7 +208,7 @@ public:
 private:
   inline timestamp_t makeTime(timestamp_t high, uint16_t low)
   {
-    const timestamp_t t = ((high | low) + timeBase_) * timeMult_;
+    const timestamp_t t = (high | low) * timeMult_ + timeBase_;
     return (t);
   }
 
