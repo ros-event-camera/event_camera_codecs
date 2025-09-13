@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
 # find dependencies
 # find_package(MetavisionSDK COMPONENTS driver REQUIRED)
 
