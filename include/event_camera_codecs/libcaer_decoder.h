@@ -16,7 +16,16 @@
 #ifndef EVENT_CAMERA_CODECS__LIBCAER_DECODER_H_
 #define EVENT_CAMERA_CODECS__LIBCAER_DECODER_H_
 
+#ifdef __APPLE__
+#include <libkern/OSByteOrder.h>
+// Define Linux endian macros on macOS
+#define htole16(x) OSSwapHostToLittleInt16(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#define le16toh(x) OSSwapLittleToHostInt16(x)
+#define le32toh(x) OSSwapLittleToHostInt32(x)
+#else
 #include <endian.h>
+#endif
 #include <stdint.h>
 
 #include <iostream>

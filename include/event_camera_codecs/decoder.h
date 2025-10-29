@@ -126,6 +126,13 @@ public:
     setTimeBase(msg.time_base);
     return (summarize(msg.events.data(), msg.events.size(), firstTS, lastTS, numEventsOnOff));
   }
+  /*!
+  \brief Get number of bytes consumed so far from the current buffer. This is *not* the
+         number of bytes consumed during the most recent call to decode(), but the bytes
+         consumed by *all* preceding calls to decode() for the currenly used data buffer.
+  \return number of bytes consumed OR ZERO IF THE MESSAGE HAS BEEN COMPLETELY CONSUMED!
+  */
+  size_t getNumberOfBytesUsed() const { return (bytesUsed_); }
 
   // ---- interface methods
   /*!

@@ -32,8 +32,8 @@ public:
     checkSumCD_x_ += ex;
     checkSumCD_y_ += ey;
     checkSumCD_p_ += polarity;
-    ASSERT_LT(ex, width_);
-    ASSERT_LT(ey, height_);
+    EXPECT_LT(ex, width_);
+    EXPECT_LT(ey, height_);
     if (debug_ && t < lastTime_) {
       std::cout << "t going backwards: last time: " << lastTime_ << ", t: " << t << std::endl;
     }
@@ -49,8 +49,12 @@ public:
     lastTime_ = t;
   }
   // clang-format off
-  void finished() override{};
-  void rawData(const char *, size_t) override{};
+  void finished() override{
+    numFinishedCalled_++;
+  };
+  void rawData(const char *, size_t) override{
+    numRawDataCalled_++;
+  };
   // clang-format on
   // --- own methods
   void setDebug(bool b) { debug_ = b; }
@@ -65,21 +69,23 @@ public:
   size_t getNumMessages() const { return (numMessages_); }
   void verifyCheckSumCD(uint64_t t, uint64_t x, uint64_t y, uint64_t p)
   {
-    ASSERT_EQ(checkSumCD_t_, t);
-    ASSERT_EQ(checkSumCD_x_, x);
-    ASSERT_EQ(checkSumCD_y_, y);
-    ASSERT_EQ(checkSumCD_p_, p);
+    EXPECT_EQ(checkSumCD_t_, t);
+    EXPECT_EQ(checkSumCD_x_, x);
+    EXPECT_EQ(checkSumCD_y_, y);
+    EXPECT_EQ(checkSumCD_p_, p);
   }
   void verifyCheckSumTrigger(uint64_t t, uint64_t edge, uint64_t id)
   {
-    ASSERT_EQ(checkSumTrigger_t_, t);
-    ASSERT_EQ(checkSumTrigger_edge_, edge);
-    ASSERT_EQ(checkSumTrigger_id_, id);
+    EXPECT_EQ(checkSumTrigger_t_, t);
+    EXPECT_EQ(checkSumTrigger_edge_, edge);
+    EXPECT_EQ(checkSumTrigger_id_, id);
   }
 
-  void verifyLastTime(uint64_t t) { ASSERT_EQ(lastTime_, t); }
-  void verifyNumDecodedCompletely(size_t n) { ASSERT_EQ(numDecodedCompletely_, n); }
-  void verifyNumMessages(size_t n) { ASSERT_EQ(numMessages_, n); }
+  void verifyLastTime(uint64_t t) { EXPECT_EQ(lastTime_, t); }
+  void verifyNumDecodedCompletely(size_t n) { EXPECT_EQ(numDecodedCompletely_, n); }
+  void verifyNumMessages(size_t n) { EXPECT_EQ(numMessages_, n); }
+  void verifyNumRawDataCalled(size_t n) { EXPECT_EQ(numRawDataCalled_, n); }
+  void verifyNumFinishedCalled(size_t n) { EXPECT_EQ(numFinishedCalled_, n); }
 
   void printCheckSums()
   {
@@ -93,6 +99,8 @@ public:
     std::cout << "lastTime_: " << lastTime_ << std::endl;
     std::cout << "numDecodedCompletely_: " << numDecodedCompletely_ << std::endl;
     std::cout << "numMessages_: " << numMessages_ << std::endl;
+    std::cout << "numRawDataCalled_: " << numRawDataCalled_ << std::endl;
+    std::cout << "numFinishedCalled_: " << numFinishedCalled_ << std::endl;
   }
 
 private:
@@ -108,6 +116,8 @@ private:
   uint16_t height_{0};
   size_t numDecodedCompletely_{0};
   size_t numMessages_{0};
+  size_t numRawDataCalled_{0};
+  size_t numFinishedCalled_{0};
   bool debug_{false};
 };
 
@@ -120,11 +130,11 @@ public:
   void setNumOn(size_t n) { numEventsOnOff_[1] = n; }
   void test(uint64_t firstTS, uint64_t lastTS, size_t numOff, size_t numOn)
   {
-    ASSERT_GE(lastTS_, firstTS_);
-    ASSERT_EQ(firstTS_, firstTS);
-    ASSERT_EQ(lastTS_, lastTS);
-    ASSERT_EQ(numEventsOnOff_[0], numOff);
-    ASSERT_EQ(numEventsOnOff_[1], numOn);
+    EXPECT_GE(lastTS_, firstTS_);
+    EXPECT_EQ(firstTS_, firstTS);
+    EXPECT_EQ(lastTS_, lastTS);
+    EXPECT_EQ(numEventsOnOff_[0], numOff);
+    EXPECT_EQ(numEventsOnOff_[1], numOn);
   }
   void print() const
   {
@@ -174,8 +184,10 @@ void test_decode(CheckSumProcessor * proc, const std::string & bag)
   while (const auto msgPtr = ebr.next()) {
     proc->setGeometry(msgPtr->width, msgPtr->height);
     auto decoder = decoderFactory.getInstance(*msgPtr);
-    EXPECT_TRUE(decoder != nullptr);
+    ASSERT_TRUE(decoder != nullptr);
     decoder->decode(*msgPtr, proc);
+    proc->incNumDecodedCompletely(1);
+    proc->incNumMessages();
   }
 }
 
@@ -219,8 +231,11 @@ TEST(event_camera_codecs, evt3_decode)
 {
   CheckSumProcessor proc;
   test_decode(&proc, "test_data_evt3_trigger");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(1222326831810000ULL, 42078718ULL, 31656267ULL, 41439ULL);
   proc.verifyCheckSumTrigger(29096982000ULL, 1ULL, 0ULL);
+  proc.verifyNumRawDataCalled(105);
+  proc.verifyNumFinishedCalled(105);
 }
 
 TEST(event_camera_codecs, evt3_decode_until_first)
@@ -228,10 +243,13 @@ TEST(event_camera_codecs, evt3_decode_until_first)
   CheckSumProcessor proc;
   uint64_t untilTime{14252072000ULL};  // beginning of next packet
   (void)test_decode_until(untilTime, &proc, "test_data_evt3_trigger");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(29004181874000ULL, 897009ULL, 773502ULL, 1028ULL);
   proc.verifyLastTime(14252063000ULL);
   proc.verifyNumDecodedCompletely(3ULL);
   proc.verifyNumMessages(105ULL);
+  proc.verifyNumRawDataCalled(4ULL);
+  proc.verifyNumFinishedCalled(4ULL);
 }
 
 TEST(event_camera_codecs, evt3_decode_until_middle)
@@ -239,10 +257,13 @@ TEST(event_camera_codecs, evt3_decode_until_middle)
   CheckSumProcessor proc;
   uint64_t untilTime{14251634000ULL};  // middle of packet
   (void)test_decode_until(untilTime, &proc, "test_data_evt3_trigger");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(28491115518000ULL, 880131ULL, 758865ULL, 1006ULL);
   proc.verifyLastTime(14251630000ULL);
   proc.verifyNumDecodedCompletely(3ULL);
   proc.verifyNumMessages(105ULL);
+  proc.verifyNumRawDataCalled(101ULL);
+  proc.verifyNumFinishedCalled(3ULL);
 }
 
 TEST(event_camera_codecs, evt3_decode_until_last)
@@ -250,10 +271,13 @@ TEST(event_camera_codecs, evt3_decode_until_last)
   CheckSumProcessor proc;
   uint64_t untilTime{14252063000ULL};  // exactly end of packet
   (void)test_decode_until(untilTime, &proc, "test_data_evt3_trigger");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(28989929811000ULL, 896982ULL, 773451ULL, 1027ULL);
   proc.verifyLastTime(14252047000);
   proc.verifyNumDecodedCompletely(3);
   proc.verifyNumMessages(105ULL);
+  proc.verifyNumRawDataCalled(103ULL);
+  proc.verifyNumFinishedCalled(3ULL);
 }
 
 //
@@ -264,6 +288,8 @@ TEST(event_camera_codecs, mono_cd_decode)
   CheckSumProcessor proc;
   test_decode(&proc, "test_data_mono_cd");
   proc.verifyCheckSumCD(4950000ULL, 34450ULL, 26450ULL, 50ULL);
+  proc.verifyNumRawDataCalled(2ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 TEST(event_camera_codecs, mono_cd_decode_until_first)
@@ -271,10 +297,13 @@ TEST(event_camera_codecs, mono_cd_decode_until_first)
   CheckSumProcessor proc;
   uint64_t untilTime{50000ULL};  // first event in packet
   (void)test_decode_until(untilTime, &proc, "test_data_mono_cd");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(1225000ULL, 17225ULL, 13225ULL, 25ULL);
   proc.verifyLastTime(49000ULL);
   proc.verifyNumDecodedCompletely(1ULL);
   proc.verifyNumMessages(2ULL);
+  proc.verifyNumRawDataCalled(2ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 TEST(event_camera_codecs, mono_cd_decode_until_middle)
@@ -282,10 +311,13 @@ TEST(event_camera_codecs, mono_cd_decode_until_middle)
   CheckSumProcessor proc;
   uint64_t untilTime{80000ULL};  // event in middle of packet
   (void)test_decode_until(untilTime, &proc, "test_data_mono_cd");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(3160000ULL, 27260ULL, 20860ULL, 40ULL);
   proc.verifyLastTime(79000);
   proc.verifyNumDecodedCompletely(1ULL);
   proc.verifyNumMessages(2ULL);
+  proc.verifyNumRawDataCalled(2ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 TEST(event_camera_codecs, mono_cd_decode_until_last)
@@ -293,10 +325,13 @@ TEST(event_camera_codecs, mono_cd_decode_until_last)
   CheckSumProcessor proc;
   uint64_t untilTime{49000ULL};  // last event in previous packet
   (void)test_decode_until(untilTime, &proc, "test_data_mono_cd");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(1176000ULL, 16856ULL, 12936ULL, 24ULL);
   proc.verifyLastTime(48000ULL);
   proc.verifyNumDecodedCompletely(0ULL);
   proc.verifyNumMessages(2ULL);
+  proc.verifyNumRawDataCalled(1ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 //
@@ -306,6 +341,7 @@ TEST(event_camera_codecs, libcaer_decode)
 {
   CheckSumProcessor proc;
   test_decode(&proc, "test_data_libcaer_rollover");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(15762826572202229126ULL, 111651612ULL, 82801007ULL, 181908ULL);
 }
 
@@ -314,6 +350,7 @@ TEST(event_camera_codecs, libcaer_decode_until_very_first)
   CheckSumProcessor proc;
   uint64_t untilTime{1702309120762236018ULL};  // first event in first packet
   (void)test_decode_until(untilTime, &proc, "test_data_libcaer_rollover");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(0ULL, 0ULL, 0ULL, 0ULL);
   proc.verifyLastTime(0ULL);
   proc.verifyNumDecodedCompletely(0ULL);
@@ -362,7 +399,7 @@ TEST(event_camera_codecs, libcaer_summarize)
 
 TEST(event_camera_codecs, libcaer_find_first)
 {
-  ASSERT_EQ(1702309120772229018ULL, test_find_first("test_data_libcaer_rollover"));
+  EXPECT_EQ(1702309120772229018ULL, test_find_first("test_data_libcaer_rollover"));
 }
 
 //
@@ -372,7 +409,10 @@ TEST(event_camera_codecs, libcaer_cmp_decode)
 {
   CheckSumProcessor proc;
   test_decode(&proc, "test_data_libcaer_cmp");
+  proc.printCheckSums();
   proc.verifyCheckSumCD(14023744309793358664ULL, 269115819ULL, 200213171ULL, 491741ULL);
+  proc.verifyNumRawDataCalled(191ULL);
+  proc.verifyNumFinishedCalled(191ULL);
 }
 
 TEST(event_camera_codecs, libcaer_cmp_summarize)
@@ -384,7 +424,7 @@ TEST(event_camera_codecs, libcaer_cmp_summarize)
 
 TEST(event_camera_codecs, libcaer_cmp_find_first)
 {
-  ASSERT_EQ(1702669729864452000ULL, test_find_first("test_data_libcaer_cmp"));
+  EXPECT_EQ(1702669729864452000ULL, test_find_first("test_data_libcaer_cmp"));
 }
 
 TEST(event_camera_codecs, libcaer_cmp_decode_until_first)
@@ -397,6 +437,8 @@ TEST(event_camera_codecs, libcaer_cmp_decode_until_first)
   proc.verifyLastTime(1702669729864451000);
   proc.verifyNumDecodedCompletely(1ULL);
   proc.verifyNumMessages(191ULL);
+  proc.verifyNumRawDataCalled(191ULL);
+  proc.verifyNumFinishedCalled(1ULL);
 }
 
 TEST(event_camera_codecs, libcaer_cmp_decode_until_middle)
@@ -408,9 +450,10 @@ TEST(event_camera_codecs, libcaer_cmp_decode_until_middle)
 
   proc.verifyCheckSumCD(7308769552432234048ULL, 2811188ULL, 2123354ULL, 5224ULL);
   proc.verifyLastTime(1702669729874406000ULL);
-
   proc.verifyNumDecodedCompletely(2ULL);
   proc.verifyNumMessages(191ULL);
+  proc.verifyNumRawDataCalled(189ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 TEST(event_camera_codecs, libcaer_cmp_decode_until_last)
@@ -423,6 +466,8 @@ TEST(event_camera_codecs, libcaer_cmp_decode_until_last)
   proc.verifyLastTime(1702669729874446000ULL);
   proc.verifyNumDecodedCompletely(2ULL);
   proc.verifyNumMessages(191ULL);
+  proc.verifyNumRawDataCalled(189ULL);
+  proc.verifyNumFinishedCalled(2ULL);
 }
 
 int main(int argc, char ** argv)

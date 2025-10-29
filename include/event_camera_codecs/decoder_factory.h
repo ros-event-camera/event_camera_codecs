@@ -54,6 +54,9 @@ public:
   Decoder<MsgT, EventProcT> * getInstance(
     const std::string & codec, uint16_t width, uint16_t height)
   {
+    (void)codec;
+    (void)width;
+    (void)height;
     throw std::runtime_error("no decoder available for this message type!");
   }
 };
