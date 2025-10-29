@@ -2,8 +2,8 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2025-10-29)
+------------------
 * added getNumberOfBytesUsed() top api
 * more documentation and tests
 * Fix: (void) unused paras for successful build
