@@ -148,6 +148,7 @@ public:
         } break;
           // ------- the CONTINUED codes are used in conjunction with
           // the OTHERS code, so ignore as well
+        case Code::CODE_9:  // Lucid Vision Labs unknown code
         case Code::CONTINUED_4:
         case Code::CONTINUED_12: {
         } break;
