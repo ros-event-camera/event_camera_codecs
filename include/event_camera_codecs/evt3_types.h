@@ -35,6 +35,7 @@ enum Code {
   TIME_LOW = 0b0110,     // 6
   CONTINUED_4 = 0b0111,  // 7
   TIME_HIGH = 0b1000,    // 8
+  CODE_9 = 0b1001,       // 9  (padding code, first seen on Lucid Vision Labs cameras)
   EXT_TRIGGER = 0b1010,  // 10
   OTHERS = 0b1110,       // 14
   CONTINUED_12 = 0b1111  // 15
