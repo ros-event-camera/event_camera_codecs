@@ -40,14 +40,16 @@ public:
     EXPECT_TRUE(t >= lastTime_);
     lastTime_ = t;
   }
-  void eventExtTrigger(uint64_t t, uint8_t edge, uint8_t id) override
+  bool eventExtTrigger(uint64_t t, uint8_t edge, uint8_t id) override
   {
     checkSumTrigger_t_ += t;
     checkSumTrigger_edge_ += edge;
     checkSumTrigger_id_ += id;
     EXPECT_TRUE(t >= lastTime_);
     lastTime_ = t;
+    return (true);
   }
+
   // clang-format off
   void finished() override{
     numFinishedCalled_++;
