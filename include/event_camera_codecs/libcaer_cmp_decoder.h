@@ -35,13 +35,15 @@ class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
+  size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     struct NoTimeLimit
     {
       static bool isInFuture(uint64_t, uint64_t) { return (false); }
     };
-    doDecode<NoTimeLimit>(buf, bufSize, processor, 0, nullptr, nullptr);
+    size_t numConsumed{0};
+    doDecode<NoTimeLimit>(buf, bufSize, processor, 0, &numConsumed, nullptr);
+    return (numConsumed);
   }
 
   size_t decodeUntil(

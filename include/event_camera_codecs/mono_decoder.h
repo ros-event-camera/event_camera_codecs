@@ -34,7 +34,7 @@ class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
+  size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     for (const uint8_t * p_u8 = buf; p_u8 < buf + bufSize; p_u8 += 8) {
       const uint64_t & p = *reinterpret_cast<const uint64_t *>(p_u8);
@@ -44,6 +44,7 @@ public:
         static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL));
     }
     processor->finished();
+    return (bufSize);
   }
 
   size_t decodeUntil(
