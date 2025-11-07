@@ -61,9 +61,11 @@ public:
         *nextTime = t;
         return (p_u8 - buf);
       }
-      processor->eventExtTrigger(
-        t, static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
-        static_cast<uint8_t>((p >> 48) & 0x7FFFULL));
+      if (!processor->eventExtTrigger(
+            t, static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
+            static_cast<uint8_t>((p >> 48) & 0x7FFFULL))) {
+        return (p_u8 - buf);
+      }
     }
     processor->finished();
     return (bufSize);
