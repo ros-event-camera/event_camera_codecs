@@ -2,8 +2,8 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2025-12-06)
+------------------
 * updated license string in package.xml
 * fix broken tests and README
 * returning false from eventExtTrigger() will now interrupt decode()
