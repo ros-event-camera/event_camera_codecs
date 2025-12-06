@@ -2,6 +2,14 @@
 Changelog for package event_camera_codecs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updated license string in package.xml
+* fix broken tests and README
+* returning false from eventExtTrigger() will now interrupt decode()
+* do not bomb out on padding code 9
+* Contributors: Bernd Pfrommer
+
 2.0.1 (2025-10-29)
 ------------------
 * added getNumberOfBytesUsed() top api
