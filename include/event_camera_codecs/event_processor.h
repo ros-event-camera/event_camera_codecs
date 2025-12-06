@@ -42,8 +42,9 @@ public:
    * \param sensor_time time (usually in nanoseconds, depends on decoder configuration)
    * \param edge indicator if rising or falling edge of trigger pulse
    * \param id identifier of trigger source (e.g. which pin the pulse arrived on)
+   * \return boolean indicating whether processing should continue (true) or stop (false)
    */
-  virtual void eventExtTrigger(uint64_t sensor_time, uint8_t edge, uint8_t id) = 0;
+  virtual bool eventExtTrigger(uint64_t sensor_time, uint8_t edge, uint8_t id) = 0;
   /**
    * \brief called after the processing of the packet has been completed, or
    *        the time limit (until_time) has been reached.

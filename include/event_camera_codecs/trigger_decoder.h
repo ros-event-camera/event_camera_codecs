@@ -34,15 +34,19 @@ class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
+  size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     for (const uint8_t * p_u8 = buf; p_u8 < buf + bufSize; p_u8 += 8) {
       const uint64_t & p = *reinterpret_cast<const uint64_t *>(p_u8);
-      processor->eventExtTrigger(
-        timeBase_ + static_cast<uint32_t>(p & 0xFFFFFFFFULL),
-        static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL), static_cast<uint8_t>((p >> 48) & 0x7FFFULL));
+      if (!processor->eventExtTrigger(
+            timeBase_ + static_cast<uint32_t>(p & 0xFFFFFFFFULL),
+            static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
+            static_cast<uint8_t>((p >> 48) & 0x7FFFULL))) {
+        return (p_u8 - buf);
+      }
     }
     processor->finished();
+    return (bufSize);
   }
 
   size_t decodeUntil(
@@ -57,9 +61,11 @@ public:
         *nextTime = t;
         return (p_u8 - buf);
       }
-      processor->eventExtTrigger(
-        t, static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
-        static_cast<uint8_t>((p >> 48) & 0x7FFFULL));
+      if (!processor->eventExtTrigger(
+            t, static_cast<bool>(p & ~0x7FFFFFFFFFFFFFFFULL),
+            static_cast<uint8_t>((p >> 48) & 0x7FFFULL))) {
+        return (p_u8 - buf);
+      }
     }
     processor->finished();
     return (bufSize);

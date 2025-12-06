@@ -51,7 +51,7 @@ struct EventCounter : public event_camera_codecs::EventProcessor
     }
     numEvents++;
   }
-  void eventExtTrigger(uint64_t t, uint8_t, uint8_t)
+  bool eventExtTrigger(uint64_t t, uint8_t, uint8_t)
   {
     if (t < lastTime || t - lastTime > 1) {
       if (t < lastTime) {
@@ -63,6 +63,7 @@ struct EventCounter : public event_camera_codecs::EventProcessor
     }
     lastTime = t;
     numEvents++;
+    return (true);
   }
   void finished() {}
   void rawData(const char *, size_t) {}

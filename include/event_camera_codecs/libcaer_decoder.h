@@ -45,7 +45,7 @@ class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
+  size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     struct Decode
     {
@@ -63,6 +63,7 @@ public:
       size_t bytesProcessed{0};
     } decoder(processor);
     loopOverTime<Decode>(buf, bufSize, decoder);
+    return (decoder.bytesProcessed);
   }
 
   size_t decodeUntil(

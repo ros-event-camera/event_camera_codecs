@@ -36,13 +36,15 @@ class Decoder : public event_camera_codecs::Decoder<MsgT, EventProcT>
 public:
   using timestamp_t = uint64_t;
 
-  void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
+  size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) override
   {
     struct NoTimeLimit
     {
       static bool isInFuture(uint64_t, uint64_t) { return (false); }
     };
-    doDecode<NoTimeLimit>(buf, bufSize, processor, 0, nullptr, nullptr);
+    size_t numConsumed{0};
+    doDecode<NoTimeLimit>(buf, bufSize, processor, 0, &numConsumed, nullptr);
+    return (numConsumed);
   }
 
   size_t decodeUntil(
@@ -134,7 +136,11 @@ public:
         }
         case Code::EXT_TRIGGER: {
           const ExtTrigger * e = reinterpret_cast<const ExtTrigger *>(&buffer[i]);
-          processor->eventExtTrigger(makeTime(timeHigh_, timeLow_), e->edge, e->id);
+          if (!processor->eventExtTrigger(makeTime(timeHigh_, timeLow_), e->edge, e->id)) {
+            // processing requested to stop
+            *numConsumed = (i + 1) * sizeof(Event);
+            return;
+          }
           break;
         }
         case Code::OTHERS: {
@@ -148,6 +154,7 @@ public:
         } break;
           // ------- the CONTINUED codes are used in conjunction with
           // the OTHERS code, so ignore as well
+        case Code::CODE_9:  // Lucid Vision Labs unknown code
         case Code::CONTINUED_4:
         case Code::CONTINUED_12: {
         } break;

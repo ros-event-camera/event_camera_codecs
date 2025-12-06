@@ -4,7 +4,7 @@
   <version>2.0.1</version>
   <description>package to encode and decode event_camera_msgs</description>
   <maintainer email="bernd.pfrommer@gmail.com">Bernd Pfrommer</maintainer>
-  <license>Apache2</license>
+  <license>Apache License 2.0</license>
 
 
   <!-- ROS2 dependencies -->

@@ -47,16 +47,36 @@ public:
 
   /*!
   \brief Decodes entire message, produces callbacks to \p processor.
-  Use this method to feed the decoder with messages in case you
-  want the entire message decoded.
+  Use this method to feed the decoder with messages in case you don't require a time limit.
+
+  The decoding process can be aborted by the \p processor by returning a boolean
+  flag from eventExtTrigger(). In this case, the method will return true to indicate that
+  that there are remaining unprocessed events in the message.
+  In this case decode() must be called again with the same \p msg argument,
+  to process the remaining events in the message and advance the decoder state.
+  You *must* call decode() or decodeUntil() until all bytes have been used up,
+  i.e until it returns false, even if you don't care about the remaining events of the
+  message.
   \param msg message to decode
   \param processor event processor to call when events are decoded
+  \return true if the decoding has been aborted, i.e. end of \p msg has not yet been reached.
   */
-  void decode(const MsgT & msg, EventProcT * processor)
+  bool decode(const MsgT & msg, EventProcT * processor)
   {
-    processor->rawData(reinterpret_cast<const char *>(msg.events.data()), msg.events.size());
-    setTimeBase(msg.time_base);
-    decode(msg.events.data(), msg.events.size(), processor);
+    const auto buf = reinterpret_cast<const char *>(msg.events.data());
+    const auto bufSize = msg.events.size();
+    if (bytesUsed_ == 0) {
+      processor->rawData(buf, bufSize);
+      setTimeBase(msg.time_base);  // this should already be done before
+    }
+    const size_t bytesConsumed =
+      decode(msg.events.data() + bytesUsed_, bufSize - bytesUsed_, processor);
+    bytesUsed_ += bytesConsumed;
+    const bool reachedEnd = (bytesUsed_ >= bufSize);
+    if (reachedEnd) {
+      bytesUsed_ = 0;  // reached end-of-message, reset pointer for next message
+    }
+    return (!reachedEnd);
   }
 
   /*!
@@ -64,9 +84,8 @@ public:
 
   If the time limit has been reached (implying not the entire message has been processed),
   decodeUntil() must be called again with the same \p msg argument,
-  to process the remaining events in the message. Do *not* use decode() and decodeUntil()
-  on the same decoder since the two methods advance the state of the decoder
-  differently. Also, you *must* call decodeUntil() until all bytes have been used up,
+  to process the remaining events in the message.
+  You *must* call decodeUntil() or decode() until all bytes have been used up,
   i.e until it returns false, even if you don't care about the remaining events of the
   message.
   \param msg message to be decoded
@@ -101,7 +120,7 @@ public:
       processor->rawData(reinterpret_cast<const char *>(buf), bufSize);
       setTimeBase(timeBase);  // this should already be done before
     }
-    size_t bytesConsumed =
+    const size_t bytesConsumed =
       decodeUntil(buf + bytesUsed_, bufSize - bytesUsed_, processor, timeLimit, nextTime);
     bytesUsed_ += bytesConsumed;
     const bool reachedTimeLimit = (bytesUsed_ < bufSize);
@@ -113,7 +132,8 @@ public:
 
   /*!
   \brief Summarizes message statistics. Use this function to peek into
-  message without getting processing callbacks.
+  a message without getting processing callbacks. Beware though: it will alter the
+  state of the decoder as if you had processed the entire message!
   \param msg message to summarize.
   \param firstTS first timestamp (will not be set if \p msg does not contain timestamp)
   \param lastTS last timestamp (will not be set if \p msg does not contain timestamp)
@@ -138,11 +158,13 @@ public:
   /*!
   \brief decode buffer without using message type. Use this method if the message is
   not available, e.g. when calling from python. 
+  \return number of bytes consumed during this call.
   */
-  virtual void decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
+  virtual size_t decode(const uint8_t * buf, size_t bufSize, EventProcT * processor) = 0;
   /*!
   \brief decode buffer until reaching time limit, without using message type. Use
   this method if the message is not available, e.g. when calling from python.
+  \return number of bytes consumed during this call
   */
   virtual size_t decodeUntil(
     const uint8_t * buf, size_t bufSize, EventProcT * processor, uint64_t timeLimit,
